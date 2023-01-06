@@ -1,0 +1,15 @@
+{
+  "name": "rtyping-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "apetih",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "ws": "^8.11.0"
+  }
+}
