@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net6.0-windows7.0": {
+      "DalamudPackager": {
+        "type": "Direct",
+        "requested": "[2.1.9, )",
+        "resolved": "2.1.9",
+        "contentHash": "raxjlbAWAt9AYXTiRlRJOHHFOraNicVsPJXlFQEzx+Ym2Imh990llQ5bQ+DACVGgy65+axVnlL9QwkKspY5yzQ=="
+      },
+      "WatsonWebsocket": {
+        "type": "Direct",
+        "requested": "[4.0.4, )",
+        "resolved": "4.0.4",
+        "contentHash": "2R9sbhn/h9Cv5n61DUSfG3VgpUvDtY6aDO1dNOrop8Dg51R65Xh1wlJpc5absfHnyNBVeY11/3dbybsbbqei6A=="
+      }
+    }
+  }
+}
