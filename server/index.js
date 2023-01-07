@@ -30,7 +30,7 @@ function PartyBroadcast(ws, command, content) {
     if (ws.party == null) return;
     ws.party.forEach(identity => {
         if (!users.has(identity)) return;
-        if (identity == content) return;
+        if (identity == ws.identity) return;
         const member = users.get(identity);
         member.send(JSON.stringify({
             Command: command,
