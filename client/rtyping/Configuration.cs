@@ -14,6 +14,7 @@ namespace rtyping
         public bool DisplaySelfNamePlateMarker { get; set; } = false;
         public bool DisplayOthersNamePlateMarker { get; set; } = false;
         public int NameplateMarkerStyle { get; set; } = 0;
+        public bool ShowOnlyWhenNameplateVisible { get; set; } = true;
         public float NameplateMarkerOpacity { get; set; } = 1.0f;
         public bool ServerChat { get; set; } = true;
 

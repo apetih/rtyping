@@ -1,12 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Numerics;
 using Dalamud.Game.Gui;
 using Dalamud.Interface.Windowing;
-using Dalamud.Logging;
 using FFXIVClientStructs.FFXIV.Client.Game.Group;
-using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -86,16 +83,17 @@ public class PartyTypingUI : Window, IDisposable
         if (npObj != null)
         {
             var iconNode = npObj->RootNode->Component->UldManager.NodeList[0];
-            if (!iconNode->IsVisible) return;
+            if (!iconNode->IsVisible && this.Configuration.ShowOnlyWhenNameplateVisible) return;
             var iconOffset = new Vector2(distance / 1.5f, distance / 3f);
             var iconSize = new Vector2(40.0f * npObj->RootNode->AtkResNode.ScaleX, 40.0f * npObj->RootNode->AtkResNode.ScaleY);
             var iconPos = new Vector2(npObj->RootNode->AtkResNode.X + iconNode->X + iconNode->Width,npObj->RootNode->AtkResNode.Y + iconNode->Y);
             if (iconNode->Height == 24) iconOffset.Y -= 8.0f;
-            if (this.Configuration.NameplateMarkerStyle == 1) {
-                iconOffset.Y = -16.0f + distance / 3f;
-                iconSize = new Vector2(100.0f * npObj->RootNode->AtkResNode.ScaleX, 100.0f * npObj->RootNode->AtkResNode.ScaleY);
+            if (this.Configuration.NameplateMarkerStyle == 1 || (!iconNode->IsVisible && !this.Configuration.ShowOnlyWhenNameplateVisible)) {
+                iconOffset.Y = -16.0f + (distance / 1f);
+                iconSize = new Vector2((100.0f * npObj->RootNode->AtkResNode.ScaleX), (100.0f * npObj->RootNode->AtkResNode.ScaleY));
                 iconPos = new Vector2(npObj->RootNode->AtkResNode.X + iconNode->X + (iconNode->Width / 4), npObj->RootNode->AtkResNode.Y);
                 if (iconNode->Height == 24) iconOffset.Y += 16.0f;
+                if (!iconNode->IsVisible && !this.Configuration.ShowOnlyWhenNameplateVisible) iconOffset.Y += 64.0f;
             }
             iconPos += iconOffset;
             ImGui.GetWindowDrawList().AddImage(Plugin.TypingNameplateTexture.ImGuiHandle, iconPos, iconPos + iconSize, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(new Vector4(1.0f, 1.0f, 1.0f, this.Configuration.NameplateMarkerOpacity)));
@@ -130,7 +128,7 @@ public class PartyTypingUI : Window, IDisposable
         var manager = (GroupManager*)Plugin.PartyList.GroupManagerAddress;
         for (var i = 0; i <= manager->MemberCount; i++) {
             var partyMemberObjectId = arrayData.NumberArrays[4]->IntArray[(47 + (42* i))];
-            if (partyMemberObjectId == 0) continue;
+            if (partyMemberObjectId <= 0) continue;
             partyListLocation.Add(uint.Parse($"{partyMemberObjectId}"), i);
         }
         return partyListLocation;

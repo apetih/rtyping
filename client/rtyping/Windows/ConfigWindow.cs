@@ -23,7 +23,7 @@ public class ConfigWindow : Window, IDisposable
 
     public void Dispose() { }
 
-    public override void Draw()
+    public unsafe override void Draw()
     {
         ImGui.Text("Server Status: ");
         ImGui.SameLine();
@@ -51,6 +51,7 @@ public class ConfigWindow : Window, IDisposable
         var partyOpacity = this.Configuration.PartyMarkerOpacity;
         var selfNamePlateValue = this.Configuration.DisplaySelfNamePlateMarker;
         var othersNamePlateValue = this.Configuration.DisplayOthersNamePlateMarker;
+        var showHidden = this.Configuration.ShowOnlyWhenNameplateVisible;
         var altStyle = this.Configuration.NameplateMarkerStyle;
         var nameplateOpacity = this.Configuration.NameplateMarkerOpacity;
         var chatValue = this.Configuration.ServerChat;
@@ -85,7 +86,7 @@ public class ConfigWindow : Window, IDisposable
             }
             if (ImGui.BeginTabItem("Nameplate"))
             {
-                this.Size = new Vector2(262, 220);
+                this.Size = new Vector2(262, 246);
                 ImGui.SliderFloat("Opacity", ref nameplateOpacity, 0.2f, 1.0f, "%.1f");
                 if (nameplateOpacity != this.Configuration.NameplateMarkerOpacity)
                 {
@@ -103,6 +104,12 @@ public class ConfigWindow : Window, IDisposable
                 if (ImGui.Checkbox("Display nameplate marker on others", ref othersNamePlateValue))
                 {
                     this.Configuration.DisplayOthersNamePlateMarker = othersNamePlateValue;
+                    this.Configuration.Save();
+                }
+
+                if (ImGui.Checkbox("Hide marker if nameplate not visible", ref showHidden))
+                {
+                    this.Configuration.ShowOnlyWhenNameplateVisible = showHidden;
                     this.Configuration.Save();
                 }
                 ImGui.Text("Nameplay Marker Position");
