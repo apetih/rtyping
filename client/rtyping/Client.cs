@@ -37,13 +37,13 @@ namespace rtyping
         internal State _status { get; private set; } = State.Disconnected;
         private bool disposed = false;
 
-        private string wsVer = "Yjjshacxxxx";
+        private string wsVer = "6dot3";
 
         public bool IsConnected => this.wsClient.Connected;
         public bool IsDisposed => this.disposed;
         public Client(Plugin plugin) { 
             this.Plugin = plugin;
-            this.wsClient = new WatsonWsClient("gryphonsaegis.tk", 8080, true);
+            this.wsClient = new WatsonWsClient("apetih.com", 8443, true);
             this.wsClient.ServerConnected += WsClient_ServerConnected;
             this.wsClient.ServerDisconnected += WsClient_ServerDisconnected;
             this.wsClient.MessageReceived += WsClient_MessageReceived;

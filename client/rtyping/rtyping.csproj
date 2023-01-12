@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Authors></Authors>
     <Company></Company>
-    <Version>0.0.0.12</Version>
+    <Version>0.0.0.13</Version>
     <Description>Allows other people using this plugin to see your typing status when in the same party.</Description>
     <Copyright></Copyright>
     <PackageProjectUrl>https://github.com/apetih/rtyping</PackageProjectUrl>
