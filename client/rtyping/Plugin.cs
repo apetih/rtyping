@@ -29,7 +29,7 @@ namespace rtyping
         public WindowSystem WindowSystem = new("rtyping");
         public TextureWrap TypingTexture;
         public TextureWrap TypingNameplateTexture;
-        public List<uint> TypingList;
+        public List<ulong> TypingList;
 
         public Plugin(
             DalamudPluginInterface pluginInterface, 
@@ -48,7 +48,7 @@ namespace rtyping
             this.PartyList = partyList;
             this.ClientState = clientState;
 
-            this.TypingList = new List<uint>();
+            this.TypingList = new List<ulong>();
             TypingTexture = DataManager.GetImGuiTexture("ui/uld/charamake_dataimport.tex");
             TypingNameplateTexture = DataManager.GetImGuiTextureIcon(61397);
 

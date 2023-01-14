@@ -37,7 +37,7 @@ namespace rtyping
         internal State _status { get; private set; } = State.Disconnected;
         private bool disposed = false;
 
-        private string wsVer = "6dot3";
+        private readonly string wsVer = "nwcid";
 
         public bool IsConnected => this.wsClient.Connected;
         public bool IsDisposed => this.disposed;
@@ -64,7 +64,7 @@ namespace rtyping
                 Connect();
                 return;
             }
-            this.Identifier = $"{this.Plugin.ClientState.LocalPlayer.ObjectId}";
+            this.Identifier = $"{this.Plugin.ClientState.LocalContentId}";
             if (!this.active) return;
             if (this._status == State.Connected || this._status == State.Error) return;
             this._status = State.Connecting;
@@ -109,7 +109,7 @@ namespace rtyping
                 case 1:
                     objectIDs = message.Content.Split(",");
                     for (var i = 0; i < objectIDs.Length; i++) {
-                        if (!Plugin.TypingList.Contains(uint.Parse(objectIDs[i]))) Plugin.TypingList.Add(uint.Parse(objectIDs[i]));
+                        if (!Plugin.TypingList.Contains(ulong.Parse(objectIDs[i]))) Plugin.TypingList.Add(ulong.Parse(objectIDs[i]));
                     }
                     
                     break;
@@ -117,7 +117,7 @@ namespace rtyping
                     objectIDs = message.Content.Split(",");
                     for (var i = 0; i < objectIDs.Length; i++)
                     {
-                        if (Plugin.TypingList.Contains(uint.Parse(objectIDs[i]))) Plugin.TypingList.Remove(uint.Parse(objectIDs[i]));
+                        if (Plugin.TypingList.Contains(ulong.Parse(objectIDs[i]))) Plugin.TypingList.Remove(ulong.Parse(objectIDs[i]));
                     }
                     break;
                 case 3:
