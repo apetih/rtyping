@@ -126,7 +126,6 @@ public class PartyTypingUI : Window, IDisposable
         if (!chatlog->IsVisible) return false;
         var textInput = chatlog->UldManager.NodeList[15];
         var chatCursor = textInput->GetAsAtkComponentNode()->Component->UldManager.NodeList[14];
-        var textBoxInput = textInput->GetAsAtkComponentNode()->Component->UldManager.NodeList[4]->GetAsAtkTextNode();
         if (!chatCursor->IsVisible) return false;
         return true;
     }
