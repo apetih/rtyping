@@ -43,8 +43,9 @@ public class PartyTypingUI : Window, IDisposable
 
     private unsafe void DrawPartyMemberTyping(int memberIndex) {
         if (memberIndex < 0 || memberIndex > 7) return;
-        var memberNodeIndex = 22 - memberIndex;
+
         var partyList = (AtkUnitBase*)GameGui.GetAddonByName("_PartyList", 1);
+        var memberNodeIndex = 22 - memberIndex;
 
         if (partyList == null) return;
         if (!partyList->IsVisible) return;
@@ -88,11 +89,14 @@ public class PartyTypingUI : Window, IDisposable
         if (npObj != null)
         {
             var iconNode = npObj->RootNode->Component->UldManager.NodeList[0];
+
             if (!iconNode->IsVisible && this.Configuration.ShowOnlyWhenNameplateVisible) return;
+
             var iconOffset = new Vector2(distance / 1.5f, distance / 3f);
             var iconSize = new Vector2(40.0f * npObj->RootNode->AtkResNode.ScaleX, 40.0f * npObj->RootNode->AtkResNode.ScaleY);
             var iconPos = new Vector2(npObj->RootNode->AtkResNode.X + iconNode->X + iconNode->Width,npObj->RootNode->AtkResNode.Y + iconNode->Y);
             if (iconNode->Height == 24) iconOffset.Y -= 8.0f;
+
             if (this.Configuration.NameplateMarkerStyle == 1 || (!iconNode->IsVisible && !this.Configuration.ShowOnlyWhenNameplateVisible)) {
                 iconOffset.Y = -16.0f + (distance / 1f);
                 iconSize = new Vector2((100.0f * npObj->RootNode->AtkResNode.ScaleX), (100.0f * npObj->RootNode->AtkResNode.ScaleY));
@@ -100,7 +104,9 @@ public class PartyTypingUI : Window, IDisposable
                 if (iconNode->Height == 24) iconOffset.Y += 16.0f;
                 if (!iconNode->IsVisible && !this.Configuration.ShowOnlyWhenNameplateVisible) iconOffset.Y += 64.0f;
             }
+
             iconPos += iconOffset;
+
             ImGui.GetWindowDrawList().AddImage(Plugin.TypingNameplateTexture.ImGuiHandle, iconPos, iconPos + iconSize, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(new Vector4(1.0f, 1.0f, 1.0f, this.Configuration.NameplateMarkerOpacity)));
 
         }
@@ -174,6 +180,7 @@ public class PartyTypingUI : Window, IDisposable
     {
         var typing = DetectTyping();
         string party;
+
         if (typing)
         {
             if (!wasTyping)
@@ -196,6 +203,7 @@ public class PartyTypingUI : Window, IDisposable
                 if (party != "" && !this.Plugin.Client.IsDisposed) Plugin.Client.SendStoppedTyping(party);
             }
         }
+
         DrawPartyTypingStatus();
     }
 }

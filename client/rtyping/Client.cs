@@ -37,12 +37,13 @@ namespace rtyping
         internal State _status { get; private set; } = State.Disconnected;
         private bool disposed = false;
 
-        private readonly string wsVer = "nwcid";
+        private readonly string wsVer = "gyid";
 
         public bool IsConnected => this.wsClient.Connected;
         public bool IsDisposed => this.disposed;
         public Client(Plugin plugin) { 
             this.Plugin = plugin;
+
             this.wsClient = new WatsonWsClient("apetih.com", 8443, true);
             this.wsClient.ServerConnected += WsClient_ServerConnected;
             this.wsClient.ServerDisconnected += WsClient_ServerDisconnected;
@@ -64,11 +65,16 @@ namespace rtyping
                 Connect();
                 return;
             }
+
             this.Identifier = $"{this.Plugin.ClientState.LocalContentId}";
+
             if (!this.active) return;
             if (this._status == State.Connected || this._status == State.Error) return;
+
             this._status = State.Connecting;
+
             await this.wsClient.StartWithTimeoutAsync(30);
+
             if (!this.wsClient.Connected) await Task.Run(async () =>
             {
                 await Task.Delay(3000);
@@ -103,27 +109,28 @@ namespace rtyping
             string[] objectIDs;
             switch (message.Command)
             {
-                case 0:
+                case 0: // Identify socket
                     wsClient.SendAsync(JsonConvert.SerializeObject(new Message(0, this.Identifier)));
                     break;
-                case 1:
+
+                case 1: // Typing
                     objectIDs = message.Content.Split(",");
-                    for (var i = 0; i < objectIDs.Length; i++) {
+                    for (var i = 0; i < objectIDs.Length; i++) 
                         if (!Plugin.TypingList.Contains(ulong.Parse(objectIDs[i]))) Plugin.TypingList.Add(ulong.Parse(objectIDs[i]));
-                    }
                     
                     break;
-                case 2:
+
+                case 2: // Stopped Typing
                     objectIDs = message.Content.Split(",");
                     for (var i = 0; i < objectIDs.Length; i++)
-                    {
                         if (Plugin.TypingList.Contains(ulong.Parse(objectIDs[i]))) Plugin.TypingList.Remove(ulong.Parse(objectIDs[i]));
-                    }
                     break;
-                case 3:
+
+                case 3: // Verify server version
                     wsClient.SendAsync(JsonConvert.SerializeObject(new Message(3, this.wsVer)));
                     break;
-                case 4:
+
+                case 4: // Server version mismatch
                     this.active = false;
                     this._status = State.Error;
                     this.Dispose();
@@ -139,6 +146,7 @@ namespace rtyping
         private void WsClient_ServerDisconnected(object? sender, EventArgs e)
         {
             Plugin.TypingList.Clear();
+
             if (this.active) {
                 if (this.Plugin.Configuration.ServerChat) this.Plugin.ChatGui.PrintChat(new XivChatEntry
                 {
