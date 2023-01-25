@@ -32,12 +32,12 @@ namespace rtyping
         public List<ulong> TypingList;
 
         public Plugin(
-            DalamudPluginInterface pluginInterface, 
+            DalamudPluginInterface pluginInterface,
             CommandManager commandManager,
-            GameGui gameGui, 
+            GameGui gameGui,
             ChatGui chatGui,
-            DataManager dataManager, 
-            PartyList partyList, 
+            DataManager dataManager,
+            PartyList partyList,
             ClientState clientState)
         {
             this.PluginInterface = pluginInterface;
@@ -67,11 +67,12 @@ namespace rtyping
 
             this.PluginInterface.UiBuilder.Draw += DrawUI;
             this.PluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
-                
+
             WindowSystem.GetWindow("PartyTypingStatus").IsOpen = true;
         }
 
-        private void OnCommand(string command, string args) {
+        private void OnCommand(string command, string args)
+        {
             WindowSystem.GetWindow("RTyping Configuration").IsOpen = !WindowSystem.GetWindow("RTyping Configuration").IsOpen;
         }
 

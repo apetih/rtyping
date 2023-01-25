@@ -128,7 +128,7 @@ public class ConfigWindow : Window, IDisposable
             ImGui.EndTabBar();
         }
 
-        
+
 
     }
 }

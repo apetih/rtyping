@@ -18,7 +18,7 @@ public class PartyTypingUI : Window, IDisposable
     private GameGui GameGui;
 
     public PartyTypingUI(Plugin plugin, GameGui gameGui) : base(
-        "PartyTypingStatus", 
+        "PartyTypingStatus",
             ImGuiWindowFlags.NoDecoration |
             ImGuiWindowFlags.NoSavedSettings |
             ImGuiWindowFlags.NoMove |
@@ -39,7 +39,8 @@ public class PartyTypingUI : Window, IDisposable
     {
     }
 
-    private unsafe void DrawPartyMemberTyping(int memberIndex) {
+    private unsafe void DrawPartyMemberTyping(int memberIndex)
+    {
         if (memberIndex < 0 || memberIndex > 7) return;
 
         var partyList = (AtkUnitBase*)GameGui.GetAddonByName("_PartyList", 1);
@@ -47,7 +48,7 @@ public class PartyTypingUI : Window, IDisposable
 
         if (partyList == null) return;
         if (!partyList->IsVisible) return;
-        
+
         var memberNode = partyList->UldManager.NodeListCount > memberNodeIndex ? (AtkComponentNode*)partyList->UldManager.NodeList[memberNodeIndex] : (AtkComponentNode*)IntPtr.Zero;
 
         if ((IntPtr)memberNode == IntPtr.Zero) return;
@@ -65,13 +66,17 @@ public class PartyTypingUI : Window, IDisposable
         ImGui.GetWindowDrawList().AddImage(Plugin.TypingTexture.ImGuiHandle, iconPos, iconPos + iconSize, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(new Vector4(1.0f, 1.0f, 1.0f, this.Configuration.PartyMarkerOpacity)));
     }
 
-    private unsafe void DrawPartyMemberNameplateTyping(ulong cid) {
+    private unsafe void DrawPartyMemberNameplateTyping(ulong cid)
+    {
         var ui3DModule = Framework.Instance()->GetUiModule()->GetUI3DModule();
         var oid = GetObjectIDFromContentID(cid);
+
         if (cid == Plugin.ClientState.LocalContentId && Plugin.ClientState.LocalPlayer != null) oid = Plugin.ClientState.LocalPlayer.ObjectId;
         if (oid == null) return;
+
         AddonNamePlate.NamePlateObject* npObj = null;
         var distance = 0;
+
         for (var i = 0; i < ui3DModule->NamePlateObjectInfoCount; i++)
         {
             var objectInfo = ((UI3DModule.ObjectInfo**)ui3DModule->NamePlateObjectInfoPointerArray)[i];
@@ -84,6 +89,7 @@ public class PartyTypingUI : Window, IDisposable
                 break;
             }
         }
+
         if (npObj != null)
         {
             var iconNode = npObj->RootNode->Component->UldManager.NodeList[0];
@@ -92,10 +98,11 @@ public class PartyTypingUI : Window, IDisposable
 
             var iconOffset = new Vector2(distance / 1.5f, distance / 3f);
             var iconSize = new Vector2(40.0f * npObj->RootNode->AtkResNode.ScaleX, 40.0f * npObj->RootNode->AtkResNode.ScaleY);
-            var iconPos = new Vector2(npObj->RootNode->AtkResNode.X + iconNode->X + iconNode->Width,npObj->RootNode->AtkResNode.Y + iconNode->Y);
+            var iconPos = new Vector2(npObj->RootNode->AtkResNode.X + iconNode->X + iconNode->Width, npObj->RootNode->AtkResNode.Y + iconNode->Y);
             if (iconNode->Height == 24) iconOffset.Y -= 8.0f;
 
-            if (this.Configuration.NameplateMarkerStyle == 1 || (!iconNode->IsVisible && !this.Configuration.ShowOnlyWhenNameplateVisible)) {
+            if (this.Configuration.NameplateMarkerStyle == 1 || (!iconNode->IsVisible && !this.Configuration.ShowOnlyWhenNameplateVisible))
+            {
                 iconOffset.Y = -16.0f + (distance / 1f);
                 iconSize = new Vector2((100.0f * npObj->RootNode->AtkResNode.ScaleX), (100.0f * npObj->RootNode->AtkResNode.ScaleY));
                 iconPos = new Vector2(npObj->RootNode->AtkResNode.X + iconNode->X + (iconNode->Width / 4), npObj->RootNode->AtkResNode.Y);
@@ -114,6 +121,7 @@ public class PartyTypingUI : Window, IDisposable
     {
         uint? result = null;
         var manager = (GroupManager*)Plugin.PartyList.GroupManagerAddress;
+
         for (var i = 0; i < manager->MemberCount; i++)
         {
             var member = manager->GetPartyMemberByIndex(i);
@@ -121,19 +129,26 @@ public class PartyTypingUI : Window, IDisposable
             result = member->ObjectID;
             break;
         }
+
         return result;
     }
 
-    private unsafe bool DetectTyping() {
+    private unsafe bool DetectTyping()
+    {
         var chatlog = (AtkUnitBase*)GameGui.GetAddonByName("ChatLog", 1);
-        if(chatlog == null) return false;
+
+        if (chatlog == null) return false;
         if (!chatlog->IsVisible) return false;
+
         var textInput = chatlog->UldManager.NodeList[15];
         var chatCursor = textInput->GetAsAtkComponentNode()->Component->UldManager.NodeList[14];
+
         if (!chatCursor->IsVisible) return false;
         return true;
     }
-    private unsafe string ObtainPartyMembers() {
+
+    private unsafe string ObtainPartyMembers()
+    {
         var MemberIDs = new List<ulong>();
 
         var manager = (GroupManager*)Plugin.PartyList.GroupManagerAddress;
@@ -145,6 +160,7 @@ public class PartyTypingUI : Window, IDisposable
 
         return string.Join(",", MemberIDs.ToArray());
     }
+
     private unsafe IDictionary<ulong, int> BuildPartyIndex()
     {
         var partyListLocation = new Dictionary<ulong, int>();
@@ -156,12 +172,13 @@ public class PartyTypingUI : Window, IDisposable
         }
         return partyListLocation;
     }
+
     private unsafe void DrawPartyTypingStatus()
     {
         var agentHud = Framework.Instance()->UIModule->GetAgentModule()->GetAgentHUD();
         var partyListLocation = BuildPartyIndex();
         var list = (HudPartyMember*)agentHud->PartyMemberList;
-        for(var i = 0; i < (short)agentHud->PartyMemberCount; i++)
+        for (var i = 0; i < (short)agentHud->PartyMemberCount; i++)
         {
             var cid = list[i].ContentId;
             if (Plugin.TypingList.Contains(cid))
@@ -173,7 +190,9 @@ public class PartyTypingUI : Window, IDisposable
             }
         }
     }
+
     private bool wasTyping = false;
+
     public override void Draw()
     {
         var typing = DetectTyping();
@@ -187,9 +206,9 @@ public class PartyTypingUI : Window, IDisposable
                 party = ObtainPartyMembers();
                 if (party != "" && !this.Plugin.Client.IsDisposed) Plugin.Client.SendTyping(party);
             }
-            if(this.Configuration.DisplaySelfMarker) 
+            if (this.Configuration.DisplaySelfMarker)
                 DrawPartyMemberTyping(0);
-            if(this.Configuration.DisplaySelfNamePlateMarker)
+            if (this.Configuration.DisplaySelfNamePlateMarker)
                 DrawPartyMemberNameplateTyping(Plugin.ClientState.LocalContentId);
         }
         else
