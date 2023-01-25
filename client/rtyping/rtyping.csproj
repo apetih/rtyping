@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Authors></Authors>
+    <Authors>apetih</Authors>
     <Company></Company>
     <Version>0.0.1.2</Version>
     <Description>Allows other people using this plugin to see your typing status when in the same party.</Description>
