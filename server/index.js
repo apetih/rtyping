@@ -15,6 +15,7 @@ const server = createServer({
 const wss = new WebSocket.Server({
     server
 });
+
 const users = new Map();
 const wsVer = process.env.WSVER;
 
@@ -44,13 +45,13 @@ wss.on("connection", (ws) => {
     ws.on("pong", () => {
         ws.isAlive = true;
     });
-    
+
     ws.send(JSON.stringify({
         Command: commands.VERSION
     }));
 
     ws.verify = setTimeout(() => {
-        if(ws.identity != null) return;
+        if (ws.identity != null) return;
         ws.send(JSON.stringify({
             Command: commands.FAILED
         }));
@@ -59,7 +60,6 @@ wss.on("connection", (ws) => {
 
     ws.on("message", (data) => {
         var message = JSON.parse(data);
-        console.log(`${data}`)
         switch (message.Command) {
             default:
                 return console.log(`Unhandled command: ${message.Command}`);
@@ -77,7 +77,7 @@ wss.on("connection", (ws) => {
                 break;
             case commands.VERSION:
                 clearTimeout(ws.verify);
-                if (message.Content != wsVer){
+                if (message.Content != wsVer) {
                     ws.send(JSON.stringify({
                         Command: commands.FAILED
                     }));
