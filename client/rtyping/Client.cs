@@ -10,7 +10,8 @@ using Dalamud.Game.Text;
 namespace rtyping
 {
 
-    class Message {
+    class Message
+    {
         public int Command;
         public string Content;
 
@@ -37,11 +38,12 @@ namespace rtyping
         internal State _status { get; private set; } = State.Disconnected;
         private bool disposed = false;
 
-        private readonly string wsVer = "gyid";
+        private readonly string wsVer = "rplogon";
 
         public bool IsConnected => this.wsClient.Connected;
         public bool IsDisposed => this.disposed;
-        public Client(Plugin plugin) { 
+        public Client(Plugin plugin)
+        {
             this.Plugin = plugin;
 
             this.wsClient = new WatsonWsClient("apetih.com", 8443, true);
@@ -59,8 +61,10 @@ namespace rtyping
             }
         }
 
-        private async Task Connect() {
-            if (this.Plugin.ClientState.LocalPlayer == null) {
+        private async Task Connect()
+        {
+            if (this.Plugin.ClientState.LocalPlayer == null)
+            {
                 await Task.Delay(3000);
                 Connect();
                 return;
@@ -82,7 +86,8 @@ namespace rtyping
             });
         }
 
-        private void Login(object? sender, EventArgs e) {
+        private void Login(object? sender, EventArgs e)
+        {
             this.active = true;
             this.Connect();
         }
@@ -105,7 +110,7 @@ namespace rtyping
         private void WsClient_MessageReceived(object? sender, MessageReceivedEventArgs e)
         {
             var message = JsonConvert.DeserializeObject<Message>(Encoding.UTF8.GetString(e.Data));
-            if(message == null) return;
+            if (message == null) return;
             string[] objectIDs;
             switch (message.Command)
             {
@@ -115,9 +120,8 @@ namespace rtyping
 
                 case 1: // Typing
                     objectIDs = message.Content.Split(",");
-                    for (var i = 0; i < objectIDs.Length; i++) 
+                    for (var i = 0; i < objectIDs.Length; i++)
                         if (!Plugin.TypingList.Contains(ulong.Parse(objectIDs[i]))) Plugin.TypingList.Add(ulong.Parse(objectIDs[i]));
-                    
                     break;
 
                 case 2: // Stopped Typing
@@ -147,17 +151,18 @@ namespace rtyping
         {
             Plugin.TypingList.Clear();
 
-            if (this.active) {
+            if (this.active)
+            {
                 if (this.Plugin.Configuration.ServerChat) this.Plugin.ChatGui.PrintChat(new XivChatEntry
                 {
                     Message = "Lost connection to RTyping Server. Attempting to reconnect.",
                     Type = XivChatType.Urgent,
-                }); 
+                });
                 this._status = State.Disconnected;
                 Connect();
             }
             else
-                if(this._status != State.Error) this._status = State.Disconnected;
+                if (this._status != State.Error) this._status = State.Disconnected;
         }
 
         private void WsClient_ServerConnected(object? sender, EventArgs e)
@@ -175,7 +180,7 @@ namespace rtyping
         {
             if (this.IsDisposed) return;
             this.disposed = true;
-            this.active = false; 
+            this.active = false;
             this.Plugin.ClientState.Login -= this.Login;
             this.Plugin.ClientState.Logout -= this.Logout;
             wsClient.Dispose();
