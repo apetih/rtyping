@@ -12,7 +12,7 @@ namespace rtyping
         public bool DisplaySelfMarker { get; set; } = true;
         public float PartyMarkerOpacity { get; set; } = 1.0f;
         public bool DisplaySelfNamePlateMarker { get; set; } = false;
-        public bool DisplayOthersNamePlateMarker { get; set; } = false;
+        public bool DisplayOthersNamePlateMarker { get; set; } = true;
         public int NameplateMarkerStyle { get; set; } = 0;
         public bool ShowOnlyWhenNameplateVisible { get; set; } = true;
         public float NameplateMarkerOpacity { get; set; } = 1.0f;
