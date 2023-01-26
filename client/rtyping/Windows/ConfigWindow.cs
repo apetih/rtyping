@@ -59,17 +59,19 @@ public class ConfigWindow : Window, IDisposable
         {
             if (ImGui.BeginTabItem("General"))
             {
-                this.Size = new Vector2(262, 120);
                 if (ImGui.Checkbox("Show server status chat messages", ref chatValue))
                 {
                     this.Configuration.ServerChat = chatValue;
                     this.Configuration.Save();
                 }
+
+                if (ImGui.Button("Manage Trusted Characters")) {
+                    this.Plugin.DrawTrustedListUI();
+                }
                 ImGui.EndTabItem();
             }
             if (ImGui.BeginTabItem("Party"))
             {
-                this.Size = new Vector2(262, 148);
                 ImGui.SliderFloat("Opacity", ref partyOpacity, 0.5f, 1.0f, "%.1f");
                 if (partyOpacity != this.Configuration.PartyMarkerOpacity)
                 {
@@ -86,7 +88,6 @@ public class ConfigWindow : Window, IDisposable
             }
             if (ImGui.BeginTabItem("Nameplate"))
             {
-                this.Size = new Vector2(262, 246);
                 ImGui.SliderFloat("Opacity", ref nameplateOpacity, 0.2f, 1.0f, "%.1f");
                 if (nameplateOpacity != this.Configuration.NameplateMarkerOpacity)
                 {

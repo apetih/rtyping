@@ -65,6 +65,7 @@ namespace rtyping
             WindowSystem.AddWindow(new PartyTypingUI(this, GameGui));
             WindowSystem.AddWindow(new ConfigWindow(this));
             WindowSystem.AddWindow(new ConsentWindow(this));
+            WindowSystem.AddWindow(new TrustedListWindow(this));
 
             this.CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
             {
@@ -99,6 +100,10 @@ namespace rtyping
         public void DrawConfigUI()
         {
             WindowSystem.GetWindow("RTyping Configuration").IsOpen = true;
+        }
+        public void DrawTrustedListUI()
+        {
+            WindowSystem.GetWindow("Trusted Characters").IsOpen = true;
         }
     }
 }
