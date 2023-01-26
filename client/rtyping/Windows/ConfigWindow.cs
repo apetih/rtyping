@@ -68,17 +68,19 @@ public class ConfigWindow : Window, IDisposable
                 }
 
                 if (trustAnyone) ImGui.BeginDisabled();
-                if (ImGui.Button("Manage Trusted Characters")) {
+                if (ImGui.Button("Manage Trusted Characters"))
+                {
                     this.Plugin.DrawTrustedListUI();
                 }
                 if (trustAnyone) ImGui.EndDisabled();
 
                 if (ImGui.Checkbox("Trust Anyone", ref trustAnyone))
                 {
-                    if (!this.Configuration.TrustAnyone && trustAnyone) {
-                        ImGui.SetNextWindowPos(ImGui.GetMainViewport().GetCenter()-(new Vector2(340, 365)/2), ImGuiCond.Appearing);
+                    if (!this.Configuration.TrustAnyone && trustAnyone)
+                    {
+                        ImGui.SetNextWindowPos(ImGui.GetMainViewport().GetCenter() - (new Vector2(340, 365) / 2), ImGuiCond.Appearing);
                         ImGui.SetNextWindowSize(new Vector2(340, 370));
-                        ImGui.OpenPopup("Trust Anyone"); 
+                        ImGui.OpenPopup("Trust Anyone");
                     }
                     else
                     {
@@ -88,7 +90,8 @@ public class ConfigWindow : Window, IDisposable
                 }
 
                 var unused_open = true;
-                if (ImGui.BeginPopupModal("Trust Anyone", ref unused_open, ImGuiWindowFlags.NoResize)) {
+                if (ImGui.BeginPopupModal("Trust Anyone", ref unused_open, ImGuiWindowFlags.NoResize))
+                {
                     ImGui.TextWrapped("You're about to disable the Trusted Characters feature.\n\nBy disabling it, you will be sending typing data from anyone using RTyping within your party, and will allow you to see the typing status of anyone that trusts you or anyone who also has disabled Trusted Characters, regardless of if you trust them or not. Others who have Trusted Characters enabled will still not see your typing status unless they mark you as trusted. While this may sound more convenient, it may also bring unwanted attention to yourself.\nYou will be unable to modify trusted characters while this option is enabled.\n\nMake sure you understand the risks involved before deciding to enable this feature.");
                     ImGui.Separator();
                     ImGui.Checkbox("I understand", ref understood);

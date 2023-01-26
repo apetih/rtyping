@@ -169,7 +169,7 @@ public class PartyTypingUI : Window, IDisposable
         var trustAnyone = this.Plugin.Configuration.TrustAnyone;
 
         var MemberIDs = new List<ulong>();
-        
+
         var manager = (GroupManager*)Plugin.PartyList.GroupManagerAddress;
 
         for (var i = 0; i < manager->MemberCount; i++)

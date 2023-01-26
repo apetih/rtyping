@@ -11,7 +11,8 @@ namespace rtyping
 
         private string SelectedPlayer;
 
-        public ContextMenuManager(Plugin plugin) { 
+        public ContextMenuManager(Plugin plugin)
+        {
             this.Plugin = plugin;
             this.Plugin.ContextMenu.OnOpenGameObjectContextMenu += this.ContextMenu_OnOpenGameObjectContextMenu;
 

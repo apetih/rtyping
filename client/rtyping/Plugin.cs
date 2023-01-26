@@ -94,7 +94,7 @@ namespace rtyping
         private void DrawUI()
         {
             this.WindowSystem.Draw();
-            if(!this.Configuration.ShownConsentMenu) WindowSystem.GetWindow("RTyping Welcome").IsOpen = true;
+            if (!this.Configuration.ShownConsentMenu) WindowSystem.GetWindow("RTyping Welcome").IsOpen = true;
         }
 
         public void DrawConfigUI()
