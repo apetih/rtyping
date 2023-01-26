@@ -1,6 +1,6 @@
 # RTyping
 
-Very rough (like always) dalamud plugin for displaying the chat typing status of party members.
+Very rough (like always) dalamud plugin for displaying the chat typing status of party members marked as trusted.
 
 Shows an icon next to the player's job icon in the party list, and next to their nameplate if nearby.
 
