@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using Dalamud.Game.Gui;
 using Dalamud.Interface.Windowing;
+using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Client.Game.Group;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI;
@@ -132,6 +133,21 @@ public class PartyTypingUI : Window, IDisposable
 
         return result;
     }
+    private unsafe ushort GetHomeWorldFromContentID(ulong cid)
+    {
+        ushort result = 0;
+        var manager = (GroupManager*)Plugin.PartyList.GroupManagerAddress;
+
+        for (var i = 0; i < manager->MemberCount; i++)
+        {
+            var member = manager->GetPartyMemberByIndex(i);
+            if ((ulong)member->ContentID != cid) continue;
+            result = member->HomeWorld;
+            break;
+        }
+
+        return result;
+    }
 
     private unsafe bool DetectTyping()
     {
@@ -149,13 +165,18 @@ public class PartyTypingUI : Window, IDisposable
 
     private unsafe string ObtainPartyMembers()
     {
-        var MemberIDs = new List<ulong>();
+        var trustedList = this.Plugin.Configuration.TrustedCharacters;
 
+        var MemberIDs = new List<ulong>();
+        
         var manager = (GroupManager*)Plugin.PartyList.GroupManagerAddress;
+
         for (var i = 0; i < manager->MemberCount; i++)
         {
             var member = manager->GetPartyMemberByIndex(i);
-            MemberIDs.Add((ulong)member->ContentID);
+            var cid = (ulong)member->ContentID;
+            if (trustedList.Contains($"{MemoryHelper.ReadSeStringNullTerminated((nint)member->Name)}@{member->HomeWorld}"))
+                MemberIDs.Add(cid);
         }
 
         return string.Join(",", MemberIDs.ToArray());
@@ -178,9 +199,12 @@ public class PartyTypingUI : Window, IDisposable
         var agentHud = Framework.Instance()->UIModule->GetAgentModule()->GetAgentHUD();
         var partyListLocation = BuildPartyIndex();
         var list = (HudPartyMember*)agentHud->PartyMemberList;
+        var trustedList = this.Plugin.Configuration.TrustedCharacters;
+
         for (var i = 0; i < (short)agentHud->PartyMemberCount; i++)
         {
             var cid = list[i].ContentId;
+            if (!trustedList.Contains($"{MemoryHelper.ReadSeStringNullTerminated((nint)list[i].Name)}@{GetHomeWorldFromContentID(list[i].ContentId)}")) continue;
             if (Plugin.TypingList.Contains(cid))
             {
                 DrawPartyMemberTyping(partyListLocation[cid]);

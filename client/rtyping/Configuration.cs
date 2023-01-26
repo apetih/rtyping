@@ -1,6 +1,7 @@
 using Dalamud.Configuration;
 using Dalamud.Plugin;
 using System;
+using System.Collections.Generic;
 
 namespace rtyping
 {
@@ -9,6 +10,8 @@ namespace rtyping
     {
         public int Version { get; set; } = 0;
 
+        public bool ShownConsentMenu { get; set; } = false;
+        public List<string> TrustedCharacters { get; set; } = new List<string>();
         public bool DisplaySelfMarker { get; set; } = true;
         public float PartyMarkerOpacity { get; set; } = 1.0f;
         public bool DisplaySelfNamePlateMarker { get; set; } = false;

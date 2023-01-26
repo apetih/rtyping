@@ -9,6 +9,7 @@ using Dalamud.Game.ClientState.Party;
 using Dalamud.Game.ClientState;
 using System.Collections.Generic;
 using Dalamud.Game.Command;
+using Dalamud.ContextMenu;
 
 namespace rtyping
 {
@@ -22,10 +23,12 @@ namespace rtyping
         public GameGui GameGui { get; init; }
         private DataManager DataManager { get; init; }
         public Configuration Configuration { get; init; }
+        public DalamudContextMenu ContextMenu { get; init; }
         [PluginService] public PartyList PartyList { get; init; }
         [PluginService] public ClientState ClientState { get; init; }
         [PluginService] public ChatGui ChatGui { get; init; }
         public Client Client { get; init; }
+        public ContextMenuManager ContextMenuManager { get; init; }
         public WindowSystem WindowSystem = new("rtyping");
         public TextureWrap TypingTexture;
         public TextureWrap TypingNameplateTexture;
@@ -47,6 +50,7 @@ namespace rtyping
             this.DataManager = dataManager;
             this.PartyList = partyList;
             this.ClientState = clientState;
+            this.ContextMenu = new DalamudContextMenu();
 
             this.TypingList = new List<ulong>();
             TypingTexture = DataManager.GetImGuiTexture("ui/uld/charamake_dataimport.tex");
@@ -56,6 +60,7 @@ namespace rtyping
             this.Configuration.Initialize(this.PluginInterface);
 
             this.Client = new Client(this);
+            this.ContextMenuManager = new ContextMenuManager(this);
 
             WindowSystem.AddWindow(new ConfigWindow(this));
             WindowSystem.AddWindow(new PartyTypingUI(this, GameGui));
@@ -80,6 +85,7 @@ namespace rtyping
         {
             this.WindowSystem.RemoveAllWindows();
             this.Client.Dispose();
+            this.ContextMenuManager.Dispose();
             this.CommandManager.RemoveHandler(CommandName);
         }
 
