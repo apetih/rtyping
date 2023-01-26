@@ -39,7 +39,7 @@ namespace rtyping
 
         private void ContextMenu_OnOpenGameObjectContextMenu(GameObjectContextMenuOpenArgs args)
         {
-            if (!this.IsValidAddon(args)) return;
+            if (!IsValidAddon(args)) return;
             var trustedList = this.Plugin.Configuration.TrustedCharacters;
             this.SelectedPlayer = $"{args.Text}@{args.ObjectWorld}";
             if (this.SelectedPlayer == $"{this.Plugin.ClientState.LocalPlayer!.Name}@{this.Plugin.ClientState.LocalPlayer!.HomeWorld.Id}") return;
@@ -49,10 +49,28 @@ namespace rtyping
                 args.AddCustomItem(this.addTrustedItem);
         }
 
-        private bool IsValidAddon(BaseContextMenuArgs args)
+        private static bool IsValidAddon(BaseContextMenuArgs args)
         {
-            if (args.ParentAddonName == "BlackList" || args.ParentAddonName == "LookingForGroup") return false;
-            return true;
+            switch (args.ParentAddonName)
+            {
+                default:
+                    return false;
+
+                case null:
+                case "LookingForGroup":
+                case "PartyMemberList":
+                case "FriendList":
+                case "FreeCompany":
+                case "SocialList":
+                case "ContactList":
+                case "ChatLog":
+                case "_PartyList":
+                case "LinkShell":
+                case "CrossWorldLinkshell":
+                case "ContentMemberList":
+                case "BlackList":
+                    return args.Text != null && args.ObjectWorld != 0 && args.ObjectWorld != 65535;
+            }
         }
 
         public void Dispose()
