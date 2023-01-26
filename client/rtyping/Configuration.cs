@@ -20,6 +20,7 @@ namespace rtyping
         public bool ShowOnlyWhenNameplateVisible { get; set; } = true;
         public float NameplateMarkerOpacity { get; set; } = 1.0f;
         public bool ServerChat { get; set; } = true;
+        public bool TrustAnyone { get; set; } = false;
 
         // the below exist just to make saving less cumbersome
         [NonSerialized]

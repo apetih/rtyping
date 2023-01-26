@@ -166,6 +166,7 @@ public class PartyTypingUI : Window, IDisposable
     private unsafe string ObtainPartyMembers()
     {
         var trustedList = this.Plugin.Configuration.TrustedCharacters;
+        var trustAnyone = this.Plugin.Configuration.TrustAnyone;
 
         var MemberIDs = new List<ulong>();
         
@@ -175,7 +176,7 @@ public class PartyTypingUI : Window, IDisposable
         {
             var member = manager->GetPartyMemberByIndex(i);
             var cid = (ulong)member->ContentID;
-            if (trustedList.Contains($"{MemoryHelper.ReadSeStringNullTerminated((nint)member->Name)}@{member->HomeWorld}"))
+            if (trustedList.Contains($"{MemoryHelper.ReadSeStringNullTerminated((nint)member->Name)}@{member->HomeWorld}") || trustAnyone)
                 MemberIDs.Add(cid);
         }
 
@@ -200,11 +201,12 @@ public class PartyTypingUI : Window, IDisposable
         var partyListLocation = BuildPartyIndex();
         var list = (HudPartyMember*)agentHud->PartyMemberList;
         var trustedList = this.Plugin.Configuration.TrustedCharacters;
+        var trustAnyone = this.Plugin.Configuration.TrustAnyone;
 
         for (var i = 0; i < (short)agentHud->PartyMemberCount; i++)
         {
             var cid = list[i].ContentId;
-            if (!trustedList.Contains($"{MemoryHelper.ReadSeStringNullTerminated((nint)list[i].Name)}@{GetHomeWorldFromContentID(list[i].ContentId)}")) continue;
+            if (!trustedList.Contains($"{MemoryHelper.ReadSeStringNullTerminated((nint)list[i].Name)}@{GetHomeWorldFromContentID(list[i].ContentId)}") && !trustAnyone) continue;
             if (Plugin.TypingList.Contains(cid))
             {
                 DrawPartyMemberTyping(partyListLocation[cid]);

@@ -23,6 +23,7 @@ public class ConfigWindow : Window, IDisposable
 
     public void Dispose() { }
 
+    private bool understood = false;
     public unsafe override void Draw()
     {
         ImGui.Text("Server Status: ");
@@ -55,6 +56,7 @@ public class ConfigWindow : Window, IDisposable
         var altStyle = this.Configuration.NameplateMarkerStyle;
         var nameplateOpacity = this.Configuration.NameplateMarkerOpacity;
         var chatValue = this.Configuration.ServerChat;
+        var trustAnyone = this.Configuration.TrustAnyone;
         if (ImGui.BeginTabBar("Config", ImGuiTabBarFlags.None))
         {
             if (ImGui.BeginTabItem("General"))
@@ -65,9 +67,49 @@ public class ConfigWindow : Window, IDisposable
                     this.Configuration.Save();
                 }
 
+                if (trustAnyone) ImGui.BeginDisabled();
                 if (ImGui.Button("Manage Trusted Characters")) {
                     this.Plugin.DrawTrustedListUI();
                 }
+                if (trustAnyone) ImGui.EndDisabled();
+
+                if (ImGui.Checkbox("Trust Anyone", ref trustAnyone))
+                {
+                    if (!this.Configuration.TrustAnyone && trustAnyone) {
+                        ImGui.SetNextWindowPos(ImGui.GetMainViewport().GetCenter()-(new Vector2(340, 365)/2), ImGuiCond.Appearing);
+                        ImGui.SetNextWindowSize(new Vector2(340, 370));
+                        ImGui.OpenPopup("Trust Anyone"); 
+                    }
+                    else
+                    {
+                        this.Configuration.TrustAnyone = trustAnyone;
+                        this.Configuration.Save();
+                    }
+                }
+
+                var unused_open = true;
+                if (ImGui.BeginPopupModal("Trust Anyone", ref unused_open, ImGuiWindowFlags.NoResize)) {
+                    ImGui.TextWrapped("You're about to disable the Trusted Characters feature.\n\nBy disabling it, you will be sending typing data from anyone using RTyping within your party, and will allow you to see the typing status of anyone that trusts you or anyone who also has disabled Trusted Characters, regardless of if you trust them or not. Others who have Trusted Characters enabled will still not see your typing status unless they mark you as trusted. While this may sound more convenient, it may also bring unwanted attention to yourself.\nYou will be unable to modify trusted characters while this option is enabled.\n\nMake sure you understand the risks involved before deciding to enable this feature.");
+                    ImGui.Separator();
+                    ImGui.Checkbox("I understand", ref understood);
+                    if (ImGui.Button("Oh heck no, bring me back"))
+                    {
+                        understood = false;
+                        ImGui.CloseCurrentPopup();
+                    }
+                    ImGui.SameLine();
+                    if (!understood) ImGui.BeginDisabled();
+                    if (ImGui.Button("I really REALLY understand"))
+                    {
+                        this.Configuration.TrustAnyone = true;
+                        this.Configuration.Save();
+                        understood = false;
+                        ImGui.CloseCurrentPopup();
+                    }
+                    if (!understood) ImGui.EndDisabled();
+                    ImGui.EndPopup();
+                }
+
                 ImGui.EndTabItem();
             }
             if (ImGui.BeginTabItem("Party"))

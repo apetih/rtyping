@@ -40,6 +40,7 @@ namespace rtyping
         private void ContextMenu_OnOpenGameObjectContextMenu(GameObjectContextMenuOpenArgs args)
         {
             if (!IsValidAddon(args)) return;
+            if (this.Plugin.Configuration.TrustAnyone) return;
             var trustedList = this.Plugin.Configuration.TrustedCharacters;
             this.SelectedPlayer = $"{args.Text}@{args.ObjectWorld}";
             if (this.SelectedPlayer == $"{this.Plugin.ClientState.LocalPlayer!.Name}@{this.Plugin.ClientState.LocalPlayer!.HomeWorld.Id}") return;
