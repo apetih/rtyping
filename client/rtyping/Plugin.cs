@@ -62,8 +62,9 @@ namespace rtyping
             this.Client = new Client(this);
             this.ContextMenuManager = new ContextMenuManager(this);
 
-            WindowSystem.AddWindow(new ConfigWindow(this));
             WindowSystem.AddWindow(new PartyTypingUI(this, GameGui));
+            WindowSystem.AddWindow(new ConfigWindow(this));
+            WindowSystem.AddWindow(new ConsentWindow(this));
 
             this.CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
             {
@@ -92,6 +93,7 @@ namespace rtyping
         private void DrawUI()
         {
             this.WindowSystem.Draw();
+            if(!this.Configuration.ShownConsentMenu) WindowSystem.GetWindow("RTyping Welcome").IsOpen = true;
         }
 
         public void DrawConfigUI()
