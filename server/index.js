@@ -60,6 +60,7 @@ wss.on("connection", (ws) => {
 
     ws.on("message", (data) => {
         var message = JSON.parse(data);
+        var party = [];
         switch (message.Command) {
             default:
                 return console.log(`Unhandled command: ${message.Command}`);
@@ -68,11 +69,15 @@ wss.on("connection", (ws) => {
                 users.set(message.Content, ws);
                 break;
             case commands.TYPING:
-                ws.party = message.Content.split(",");
+                party = message.Content.split(",");
+                party.splice(8, Infinity);
+                ws.party = party;
                 PartyBroadcast(ws, commands.TYPING, ws.identity);
                 break;
             case commands.NOTYPING:
-                ws.party = message.Content.split(",");
+                party = message.Content.split(",");
+                party.splice(8, Infinity);
+                ws.party = party;
                 PartyBroadcast(ws, commands.NOTYPING, ws.identity);
                 break;
             case commands.VERSION:
