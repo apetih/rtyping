@@ -21,7 +21,7 @@ namespace rtyping
         private DalamudPluginInterface PluginInterface { get; init; }
         private CommandManager CommandManager { get; init; }
         public GameGui GameGui { get; init; }
-        private DataManager DataManager { get; init; }
+        public DataManager DataManager { get; init; }
         public Configuration Configuration { get; init; }
         public DalamudContextMenu ContextMenu { get; init; }
         [PluginService] public PartyList PartyList { get; init; }
