@@ -1,4 +1,5 @@
 using Dalamud.ContextMenu;
+using Dalamud.Game.Text;
 using System;
 
 namespace rtyping
@@ -27,6 +28,11 @@ namespace rtyping
             this.Plugin.Configuration.TrustedCharacters.Remove(this.SelectedPlayer);
             this.Plugin.Configuration.TrustedCharacters = trustedList;
             this.Plugin.Configuration.Save();
+            this.Plugin.ChatGui.PrintChat(new XivChatEntry
+            {
+                Message = $"[RTyping] {SelectedPlayer.Split("@")[0]} has been removed as a trusted character.",
+                Type = XivChatType.SystemMessage,
+            });
         }
 
         private void AddTrusted(GameObjectContextMenuItemSelectedArgs args)
@@ -36,6 +42,11 @@ namespace rtyping
             this.Plugin.Configuration.TrustedCharacters.Add(this.SelectedPlayer);
             this.Plugin.Configuration.TrustedCharacters = trustedList;
             this.Plugin.Configuration.Save();
+            this.Plugin.ChatGui.PrintChat(new XivChatEntry
+            {
+                Message = $"[RTyping] {SelectedPlayer.Split("@")[0]} has been added as a trusted character.",
+                Type = XivChatType.SystemMessage,
+            });
         }
 
         private void ContextMenu_OnOpenGameObjectContextMenu(GameObjectContextMenuOpenArgs args)
