@@ -38,7 +38,7 @@ namespace rtyping
         internal State _status { get; private set; } = State.Disconnected;
         private bool disposed = false;
 
-        private readonly string wsVer = "rplogonTrusted";
+        private readonly string wsVer = "rplogonHashed";
 
         public bool IsConnected => this.wsClient.Connected;
         public bool IsDisposed => this.disposed;
@@ -46,7 +46,7 @@ namespace rtyping
         {
             this.Plugin = plugin;
 
-            this.wsClient = new WatsonWsClient("apetih.com", 8443, true);
+            this.wsClient = new WatsonWsClient("rtyping.apetih.com", 8443, true);
             this.wsClient.ServerConnected += WsClient_ServerConnected;
             this.wsClient.ServerDisconnected += WsClient_ServerDisconnected;
             this.wsClient.MessageReceived += WsClient_MessageReceived;
@@ -70,7 +70,7 @@ namespace rtyping
                 return;
             }
 
-            this.Identifier = $"{this.Plugin.ClientState.LocalContentId}";
+            this.Identifier = this.Plugin.HashContentID(this.Plugin.ClientState.LocalContentId);
 
             if (!this.active) return;
             if (this._status == State.Connected || this._status == State.Error) return;
@@ -121,13 +121,13 @@ namespace rtyping
                 case 1: // Typing
                     objectIDs = message.Content.Split(",");
                     for (var i = 0; i < objectIDs.Length; i++)
-                        if (!Plugin.TypingList.Contains(ulong.Parse(objectIDs[i]))) Plugin.TypingList.Add(ulong.Parse(objectIDs[i]));
+                        if (!Plugin.TypingList.Contains(objectIDs[i])) Plugin.TypingList.Add(objectIDs[i]);
                     break;
 
                 case 2: // Stopped Typing
                     objectIDs = message.Content.Split(",");
                     for (var i = 0; i < objectIDs.Length; i++)
-                        if (Plugin.TypingList.Contains(ulong.Parse(objectIDs[i]))) Plugin.TypingList.Remove(ulong.Parse(objectIDs[i]));
+                        if (Plugin.TypingList.Contains(objectIDs[i])) Plugin.TypingList.Remove(objectIDs[i]);
                     break;
 
                 case 3: // Verify server version

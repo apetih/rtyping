@@ -30,6 +30,7 @@ public class PartyTypingUI : Window, IDisposable
     {
         this.Position = ImGui.GetMainViewport().Pos;
         this.Size = ImGui.GetMainViewport().Size;
+        this.SizeCondition = ImGuiCond.Always;
 
         this.Plugin = plugin;
         this.Configuration = plugin.Configuration;
@@ -67,12 +68,12 @@ public class PartyTypingUI : Window, IDisposable
         ImGui.GetWindowDrawList().AddImage(Plugin.TypingTexture.ImGuiHandle, iconPos, iconPos + iconSize, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(new Vector4(1.0f, 1.0f, 1.0f, this.Configuration.PartyMarkerOpacity)));
     }
 
-    private unsafe void DrawPartyMemberNameplateTyping(ulong cid)
+    private unsafe void DrawPartyMemberNameplateTyping(string cid)
     {
         var ui3DModule = Framework.Instance()->GetUiModule()->GetUI3DModule();
         var oid = GetObjectIDFromContentID(cid);
 
-        if (cid == Plugin.ClientState.LocalContentId && Plugin.ClientState.LocalPlayer != null) oid = Plugin.ClientState.LocalPlayer.ObjectId;
+        if (cid == Plugin.HashContentID(Plugin.ClientState.LocalContentId) && Plugin.ClientState.LocalPlayer != null) oid = Plugin.ClientState.LocalPlayer.ObjectId;
         if (oid == null) return;
 
         AddonNamePlate.NamePlateObject* npObj = null;
@@ -118,7 +119,7 @@ public class PartyTypingUI : Window, IDisposable
         }
     }
 
-    private unsafe uint? GetObjectIDFromContentID(ulong cid)
+    private unsafe uint? GetObjectIDFromContentID(string cid)
     {
         uint? result = null;
         var manager = (GroupManager*)Plugin.PartyList.GroupManagerAddress;
@@ -126,7 +127,7 @@ public class PartyTypingUI : Window, IDisposable
         for (var i = 0; i < manager->MemberCount; i++)
         {
             var member = manager->GetPartyMemberByIndex(i);
-            if ((ulong)member->ContentID != cid) continue;
+            if (Plugin.HashContentID((ulong)member->ContentID) != cid) continue;
             result = member->ObjectID;
             break;
         }
@@ -168,7 +169,7 @@ public class PartyTypingUI : Window, IDisposable
         var trustedList = this.Plugin.Configuration.TrustedCharacters;
         var trustAnyone = this.Plugin.Configuration.TrustAnyone;
 
-        var MemberIDs = new List<ulong>();
+        var MemberIDs = new List<string>();
 
         var manager = (GroupManager*)Plugin.PartyList.GroupManagerAddress;
 
@@ -177,20 +178,20 @@ public class PartyTypingUI : Window, IDisposable
             var member = manager->GetPartyMemberByIndex(i);
             var cid = (ulong)member->ContentID;
             if (trustedList.Contains($"{MemoryHelper.ReadSeStringNullTerminated((nint)member->Name)}@{member->HomeWorld}") || trustAnyone)
-                MemberIDs.Add(cid);
+                MemberIDs.Add(Plugin.HashContentID(cid));
         }
 
         return string.Join(",", MemberIDs.ToArray());
     }
 
-    private unsafe IDictionary<ulong, int> BuildPartyIndex()
+    private unsafe IDictionary<string, int> BuildPartyIndex()
     {
-        var partyListLocation = new Dictionary<ulong, int>();
+        var partyListLocation = new Dictionary<string, int>();
         var agentHud = Framework.Instance()->UIModule->GetAgentModule()->GetAgentHUD();
         var list = (HudPartyMember*)agentHud->PartyMemberList;
         for (var i = 0; i < (short)agentHud->PartyMemberCount; i++)
         {
-            partyListLocation.Add(list[i].ContentId, i);
+            partyListLocation.Add(Plugin.HashContentID(list[i].ContentId), i);
         }
         return partyListLocation;
     }
@@ -205,7 +206,7 @@ public class PartyTypingUI : Window, IDisposable
 
         for (var i = 0; i < (short)agentHud->PartyMemberCount; i++)
         {
-            var cid = list[i].ContentId;
+            var cid = Plugin.HashContentID(list[i].ContentId);
             if (!trustedList.Contains($"{MemoryHelper.ReadSeStringNullTerminated((nint)list[i].Name)}@{GetHomeWorldFromContentID(list[i].ContentId)}") && !trustAnyone) continue;
             if (Plugin.TypingList.Contains(cid))
             {
@@ -221,6 +222,7 @@ public class PartyTypingUI : Window, IDisposable
 
     public override void Draw()
     {
+        if (Plugin.ClientState.LocalPlayer == null) return;
         var typing = DetectTyping();
         string party;
 
@@ -235,7 +237,7 @@ public class PartyTypingUI : Window, IDisposable
             if (this.Configuration.DisplaySelfMarker)
                 DrawPartyMemberTyping(0);
             if (this.Configuration.DisplaySelfNamePlateMarker)
-                DrawPartyMemberNameplateTyping(Plugin.ClientState.LocalContentId);
+                DrawPartyMemberNameplateTyping(Plugin.HashContentID(Plugin.ClientState.LocalContentId));
         }
         else
         {

@@ -10,6 +10,8 @@ using Dalamud.Game.ClientState;
 using System.Collections.Generic;
 using Dalamud.Game.Command;
 using Dalamud.ContextMenu;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace rtyping
 {
@@ -32,7 +34,7 @@ namespace rtyping
         public WindowSystem WindowSystem = new("rtyping");
         public TextureWrap TypingTexture;
         public TextureWrap TypingNameplateTexture;
-        public List<ulong> TypingList;
+        public List<string> TypingList;
 
         public Plugin(
             DalamudPluginInterface pluginInterface,
@@ -52,7 +54,7 @@ namespace rtyping
             this.ClientState = clientState;
             this.ContextMenu = new DalamudContextMenu();
 
-            this.TypingList = new List<ulong>();
+            this.TypingList = new List<string>();
             TypingTexture = DataManager.GetImGuiTexture("ui/uld/charamake_dataimport.tex");
             TypingNameplateTexture = DataManager.GetImGuiTextureIcon(61397);
 
@@ -105,5 +107,16 @@ namespace rtyping
         {
             WindowSystem.GetWindow("Trusted Characters").IsOpen = true;
         }
+
+        public string HashContentID(ulong cid) {
+            var crypt = SHA256.Create();
+            var hash = new StringBuilder();
+            var crypto = crypt.ComputeHash(Encoding.UTF8.GetBytes($"{cid}"));
+            crypt.Clear();
+            foreach (var cByte in crypto) {
+                hash.Append(cByte.ToString("x2"));
+            }
+            return hash.ToString();
+         }
     }
 }
