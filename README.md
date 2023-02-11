@@ -15,7 +15,8 @@ The nameplate marker can only show up if the party member's nameplate could rend
 The icons should appear automatically, the conditions for their appearance can be changed in the configuration menu from inside the Plugin Installer or with the `/rtyping` command.
 
 ## Installation
-Add my [dalamud repository](https://github.com/apetih/MyDalamudPlugins) to Dalamud's Custom Plugin Repositories.
+
+To install the plugin from the official Dalamud repo, enable `Get plugin testing builds` under the `Experimental` tab in Dalamud Settings.
 
 Once added, look for RTyping in the Plugin Installer.
 
