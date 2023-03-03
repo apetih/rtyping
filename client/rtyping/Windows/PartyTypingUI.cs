@@ -31,6 +31,7 @@ public class PartyTypingUI : Window, IDisposable
         this.Position = ImGui.GetMainViewport().Pos;
         this.Size = ImGui.GetMainViewport().Size;
         this.SizeCondition = ImGuiCond.Always;
+        this.ForceMainWindow = true;
 
         this.Plugin = plugin;
         this.Configuration = plugin.Configuration;
