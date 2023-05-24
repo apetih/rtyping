@@ -4,21 +4,21 @@
     "net7.0-windows7.0": {
       "Dalamud.ContextMenu": {
         "type": "Direct",
-        "requested": "[1.2.1, )",
-        "resolved": "1.2.1",
-        "contentHash": "RiBkn1OYRTnVbfUGYolLBE8MOeXjok+JiZaryb27oGa7YARCTu0XgUzkRiCglujknsHOn5kAaXsT3TUJmqMigg=="
+        "requested": "[1.2.3, )",
+        "resolved": "1.2.3",
+        "contentHash": "ydemplF7DNcA/LLeongDVzWUD/JV0Fw3EwA2+P0jYq3Le2ZYSt4U8qyJq4FyoChqt0lFG8BxYCAzfeWp4Jmnqw=="
       },
       "DalamudPackager": {
         "type": "Direct",
-        "requested": "[2.1.10, )",
-        "resolved": "2.1.10",
-        "contentHash": "S6NrvvOnLgT4GDdgwuKVJjbFo+8ZEj+JsEYk9ojjOR/MMfv1dIFpT8aRJQfI24rtDcw1uF+GnSSMN4WW1yt7fw=="
+        "requested": "[2.1.11, )",
+        "resolved": "2.1.11",
+        "contentHash": "9qlAWoRRTiL/geAvuwR/g6Bcbrd/bJJgVnB/RurBiyKs6srsP0bvpoo8IK+Eg8EA6jWeM6/YJWs66w4FIAzqPw=="
       },
       "WatsonWebsocket": {
         "type": "Direct",
-        "requested": "[4.0.4, )",
-        "resolved": "4.0.4",
-        "contentHash": "2R9sbhn/h9Cv5n61DUSfG3VgpUvDtY6aDO1dNOrop8Dg51R65Xh1wlJpc5absfHnyNBVeY11/3dbybsbbqei6A=="
+        "requested": "[4.0.10, )",
+        "resolved": "4.0.10",
+        "contentHash": "jVUZ7mkhExc67CPTpSrppAJ71myrHQfmRZlGTAr4ydA1mcd69cIEqSgWGiR9WUGjo/0Cv4PYmrM209sjvGpmuw=="
       }
     }
   }
