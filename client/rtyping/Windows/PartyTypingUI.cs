@@ -54,6 +54,8 @@ public class PartyTypingUI : Window, IDisposable
 
         var memberNode = partyList->UldManager.NodeListCount > memberNodeIndex ? (AtkComponentNode*)partyList->UldManager.NodeList[memberNodeIndex] : (AtkComponentNode*)IntPtr.Zero;
 
+        var partyAlign = partyList->UldManager.NodeList[3]->Y;
+
         if ((IntPtr)memberNode == IntPtr.Zero) return;
         if (!memberNode->AtkResNode.IsVisible) return;
 
@@ -61,9 +63,11 @@ public class PartyTypingUI : Window, IDisposable
 
         if ((IntPtr)iconNode == IntPtr.Zero) return;
 
-        var iconOffset = (new Vector2(-14, 8)) * partyList->Scale;
+        var iconOffset = new Vector2(-14, 8) * partyList->Scale;
         var iconSize = new Vector2(iconNode->Width / 2, iconNode->Height / 2) * partyList->Scale;
-        var iconPos = new Vector2(partyList->X + memberNode->AtkResNode.X * partyList->Scale + iconNode->X * partyList->Scale + iconNode->Width * partyList->Scale / 2, partyList->Y + (memberNode->AtkResNode.Y * partyList->Scale) + iconNode->Y * partyList->Scale + iconNode->Height * partyList->Scale / 2);
+        var iconPos = new Vector2(
+            partyList->X + (memberNode->AtkResNode.X * partyList->Scale) + (iconNode->X * partyList->Scale) + (iconNode->Width * partyList->Scale / 2), 
+            partyList->Y + partyAlign + (memberNode->AtkResNode.Y * partyList->Scale) + (iconNode->Y * partyList->Scale) + (iconNode->Height * partyList->Scale / 2));
         iconPos += iconOffset;
 
         ImGui.GetWindowDrawList().AddImage(Plugin.TypingTexture.ImGuiHandle, iconPos, iconPos + iconSize, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(new Vector4(1.0f, 1.0f, 1.0f, this.Configuration.PartyMarkerOpacity)));
