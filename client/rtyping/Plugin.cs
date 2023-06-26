@@ -30,6 +30,7 @@ namespace rtyping
         [PluginService] public ClientState ClientState { get; init; }
         [PluginService] public ChatGui ChatGui { get; init; }
         public Client Client { get; init; }
+        public PartyManager PartyManager { get; init; }
         public ContextMenuManager ContextMenuManager { get; init; }
         public WindowSystem WindowSystem = new("rtyping");
         public TextureWrap TypingTexture;
@@ -62,6 +63,7 @@ namespace rtyping
             this.Configuration.Initialize(this.PluginInterface);
 
             this.Client = new Client(this);
+            this.PartyManager = new PartyManager(this);
             this.ContextMenuManager = new ContextMenuManager(this);
 
             WindowSystem.AddWindow(new PartyTypingUI(this, GameGui));
@@ -108,15 +110,17 @@ namespace rtyping
             WindowSystem.GetWindow("Trusted Characters").IsOpen = true;
         }
 
-        public string HashContentID(ulong cid) {
+        public string HashContentID(ulong cid)
+        {
             var crypt = SHA256.Create();
             var hash = new StringBuilder();
             var crypto = crypt.ComputeHash(Encoding.UTF8.GetBytes($"{cid}"));
             crypt.Clear();
-            foreach (var cByte in crypto) {
+            foreach (var cByte in crypto)
+            {
                 hash.Append(cByte.ToString("x2"));
             }
             return hash.ToString();
-         }
+        }
     }
 }

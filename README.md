@@ -7,7 +7,7 @@ Shows an icon next to the player's job icon in the party list, and next to their
 ## Limitations
 This plugin will only work with party members who are also using the plugin. It also does not work with chat-replacing plugins, as far as I am aware.
 
-The partylist marker will not show up for cross-world parties and alliances, although I believe it could be made to support them.
+The partylist marker will not show up for alliances.
 
 The nameplate marker can only show up if the party member's nameplate could render (regardless of if it is visible or not via player configuration) and isn't culled due to too many characters on screen.
 

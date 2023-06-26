@@ -3,11 +3,8 @@ using System.Collections.Generic;
 using System.Numerics;
 using Dalamud.Game.Gui;
 using Dalamud.Interface.Windowing;
-using Dalamud.Memory;
-using FFXIVClientStructs.FFXIV.Client.Game.Group;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI;
-using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 namespace rtyping.Windows;
@@ -17,6 +14,7 @@ public class PartyTypingUI : Window, IDisposable
     private Plugin Plugin;
     private Configuration Configuration;
     private GameGui GameGui;
+    private PartyManager PartyManager;
 
     public PartyTypingUI(Plugin plugin, GameGui gameGui) : base(
         "PartyTypingStatus",
@@ -36,6 +34,7 @@ public class PartyTypingUI : Window, IDisposable
         this.Plugin = plugin;
         this.Configuration = plugin.Configuration;
         this.GameGui = gameGui;
+        this.PartyManager = plugin.PartyManager;
     }
 
     public void Dispose()
@@ -66,20 +65,19 @@ public class PartyTypingUI : Window, IDisposable
         var iconOffset = new Vector2(-14, 8) * partyList->Scale;
         var iconSize = new Vector2(iconNode->Width / 2, iconNode->Height / 2) * partyList->Scale;
         var iconPos = new Vector2(
-            partyList->X + (memberNode->AtkResNode.X * partyList->Scale) + (iconNode->X * partyList->Scale) + (iconNode->Width * partyList->Scale / 2), 
+            partyList->X + (memberNode->AtkResNode.X * partyList->Scale) + (iconNode->X * partyList->Scale) + (iconNode->Width * partyList->Scale / 2),
             partyList->Y + partyAlign + (memberNode->AtkResNode.Y * partyList->Scale) + (iconNode->Y * partyList->Scale) + (iconNode->Height * partyList->Scale / 2));
         iconPos += iconOffset;
 
         ImGui.GetWindowDrawList().AddImage(Plugin.TypingTexture.ImGuiHandle, iconPos, iconPos + iconSize, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(new Vector4(1.0f, 1.0f, 1.0f, this.Configuration.PartyMarkerOpacity)));
     }
 
-    private unsafe void DrawPartyMemberNameplateTyping(string cid)
+    private unsafe void DrawPartyMemberNameplateTyping(IDictionary<string, Member> party, string cid)
     {
         var ui3DModule = Framework.Instance()->GetUiModule()->GetUI3DModule();
-        var oid = GetObjectIDFromContentID(cid);
+        var oid = party[cid].ObjectID;
 
         if (cid == Plugin.HashContentID(Plugin.ClientState.LocalContentId) && Plugin.ClientState.LocalPlayer != null) oid = Plugin.ClientState.LocalPlayer.ObjectId;
-        if (oid == null) return;
 
         AddonNamePlate.NamePlateObject* npObj = null;
         var distance = 0;
@@ -124,37 +122,6 @@ public class PartyTypingUI : Window, IDisposable
         }
     }
 
-    private unsafe uint? GetObjectIDFromContentID(string cid)
-    {
-        uint? result = null;
-        var manager = (GroupManager*)Plugin.PartyList.GroupManagerAddress;
-
-        for (var i = 0; i < manager->MemberCount; i++)
-        {
-            var member = manager->GetPartyMemberByIndex(i);
-            if (Plugin.HashContentID((ulong)member->ContentID) != cid) continue;
-            result = member->ObjectID;
-            break;
-        }
-
-        return result;
-    }
-    private unsafe ushort GetHomeWorldFromContentID(ulong cid)
-    {
-        ushort result = 0;
-        var manager = (GroupManager*)Plugin.PartyList.GroupManagerAddress;
-
-        for (var i = 0; i < manager->MemberCount; i++)
-        {
-            var member = manager->GetPartyMemberByIndex(i);
-            if ((ulong)member->ContentID != cid) continue;
-            result = member->HomeWorld;
-            break;
-        }
-
-        return result;
-    }
-
     private unsafe bool DetectTyping()
     {
         var chatlog = (AtkUnitBase*)GameGui.GetAddonByName("ChatLog", 1);
@@ -169,55 +136,20 @@ public class PartyTypingUI : Window, IDisposable
         return true;
     }
 
-    private unsafe string ObtainPartyMembers()
+    private unsafe void DrawPartyTypingStatus(IDictionary<string, Member> party)
     {
         var trustedList = this.Plugin.Configuration.TrustedCharacters;
         var trustAnyone = this.Plugin.Configuration.TrustAnyone;
 
-        var MemberIDs = new List<string>();
-
-        var manager = (GroupManager*)Plugin.PartyList.GroupManagerAddress;
-
-        for (var i = 0; i < manager->MemberCount; i++)
+        foreach (var cid in party.Keys)
         {
-            var member = manager->GetPartyMemberByIndex(i);
-            var cid = (ulong)member->ContentID;
-            if (trustedList.Contains($"{MemoryHelper.ReadSeStringNullTerminated((nint)member->Name)}@{member->HomeWorld}") || trustAnyone)
-                MemberIDs.Add(Plugin.HashContentID(cid));
-        }
-
-        return string.Join(",", MemberIDs.ToArray());
-    }
-
-    private unsafe IDictionary<string, int> BuildPartyIndex()
-    {
-        var partyListLocation = new Dictionary<string, int>();
-        var agentHud = Framework.Instance()->UIModule->GetAgentModule()->GetAgentHUD();
-        var list = (HudPartyMember*)agentHud->PartyMemberList;
-        for (var i = 0; i < (short)agentHud->PartyMemberCount; i++)
-        {
-            partyListLocation.Add(Plugin.HashContentID(list[i].ContentId), i);
-        }
-        return partyListLocation;
-    }
-
-    private unsafe void DrawPartyTypingStatus()
-    {
-        var agentHud = Framework.Instance()->UIModule->GetAgentModule()->GetAgentHUD();
-        var partyListLocation = BuildPartyIndex();
-        var list = (HudPartyMember*)agentHud->PartyMemberList;
-        var trustedList = this.Plugin.Configuration.TrustedCharacters;
-        var trustAnyone = this.Plugin.Configuration.TrustAnyone;
-
-        for (var i = 0; i < (short)agentHud->PartyMemberCount; i++)
-        {
-            var cid = Plugin.HashContentID(list[i].ContentId);
-            if (!trustedList.Contains($"{MemoryHelper.ReadSeStringNullTerminated((nint)list[i].Name)}@{GetHomeWorldFromContentID(list[i].ContentId)}") && !trustAnyone) continue;
+            var member = party[cid];
+            if (!trustedList.Contains($"{member.Name}@{member.World}") && !trustAnyone) continue;
             if (Plugin.TypingList.Contains(cid))
             {
-                DrawPartyMemberTyping(partyListLocation[cid]);
+                DrawPartyMemberTyping(member.Position);
                 if (this.Configuration.DisplayOthersNamePlateMarker)
-                    DrawPartyMemberNameplateTyping(cid);
+                    DrawPartyMemberNameplateTyping(party, cid);
 
             }
         }
@@ -229,31 +161,29 @@ public class PartyTypingUI : Window, IDisposable
     {
         if (Plugin.ClientState.LocalPlayer == null) return;
         var typing = DetectTyping();
-        string party;
+        var party = PartyManager.BuildPartyDictionary();
 
         if (typing)
         {
             if (!wasTyping)
             {
                 wasTyping = true;
-                party = ObtainPartyMembers();
-                if (party != "" && !this.Plugin.Client.IsDisposed) Plugin.Client.SendTyping(party);
+                if (string.Join(",", party.Keys) != "" && !this.Plugin.Client.IsDisposed) Plugin.Client.SendTyping(string.Join(",", party.Keys));
             }
             if (this.Configuration.DisplaySelfMarker)
                 DrawPartyMemberTyping(0);
             if (this.Configuration.DisplaySelfNamePlateMarker)
-                DrawPartyMemberNameplateTyping(Plugin.HashContentID(Plugin.ClientState.LocalContentId));
+                DrawPartyMemberNameplateTyping(party, Plugin.HashContentID(Plugin.ClientState.LocalContentId));
         }
         else
         {
             if (wasTyping)
             {
                 wasTyping = false;
-                party = ObtainPartyMembers();
-                if (party != "" && !this.Plugin.Client.IsDisposed) Plugin.Client.SendStoppedTyping(party);
+                if (string.Join(",", party.Keys) != "" && !this.Plugin.Client.IsDisposed) Plugin.Client.SendStoppedTyping(string.Join(",", party.Keys));
             }
         }
 
-        DrawPartyTypingStatus();
+        DrawPartyTypingStatus(party);
     }
 }
