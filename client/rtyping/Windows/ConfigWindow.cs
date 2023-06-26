@@ -162,7 +162,7 @@ public class ConfigWindow : Window, IDisposable
                     this.Configuration.ShowOnlyWhenNameplateVisible = showHidden;
                     this.Configuration.Save();
                 }
-                ImGui.Text("Nameplay Marker Position");
+                ImGui.Text("Nameplate Marker Position");
                 ImGui.RadioButton("Side", ref altStyle, 0); ImGui.SameLine();
                 ImGui.RadioButton("Top", ref altStyle, 1);
                 if (altStyle != this.Configuration.NameplateMarkerStyle)
