@@ -1,5 +1,8 @@
 using System;
+using System.Diagnostics;
 using System.Numerics;
+using Dalamud.Interface.Components;
+using Dalamud.Interface;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
 
@@ -30,6 +33,14 @@ public class ConfigWindow : Window, IDisposable
     private bool understood = false;
     public unsafe override void Draw()
     {
+
+        if (ImGuiComponents.IconButton("KoFi", FontAwesomeIcon.Coffee, new Vector4(1.0f, 0.35f, 0.37f, 1.0f)))
+            Process.Start(new ProcessStartInfo { FileName = "https://ko-fi.com/apetih", UseShellExecute = true });
+        if (ImGui.IsItemHovered())
+            ImGui.SetTooltip("Support me on Ko-Fi");
+
+        ImGui.SameLine();
+
         ImGui.Text("Server Status: ");
         ImGui.SameLine();
         switch (Plugin.Client._status)
@@ -65,12 +76,6 @@ public class ConfigWindow : Window, IDisposable
         {
             if (ImGui.BeginTabItem("General"))
             {
-                if (ImGui.Checkbox("Show server status chat messages", ref chatValue))
-                {
-                    this.Configuration.ServerChat = chatValue;
-                    this.Configuration.Save();
-                }
-
                 if (trustAnyone) ImGui.BeginDisabled();
                 if (ImGui.Button("Manage Trusted Characters"))
                 {
@@ -115,6 +120,12 @@ public class ConfigWindow : Window, IDisposable
                     }
                     if (!understood) ImGui.EndDisabled();
                     ImGui.EndPopup();
+                }
+
+                if (ImGui.Checkbox("Show server status chat messages", ref chatValue))
+                {
+                    this.Configuration.ServerChat = chatValue;
+                    this.Configuration.Save();
                 }
 
                 ImGui.EndTabItem();
