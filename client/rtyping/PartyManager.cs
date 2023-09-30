@@ -1,7 +1,5 @@
-using Dalamud.Game.ClientState.Party;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Memory;
-using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game.Group;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;

@@ -1,7 +1,5 @@
 using System;
-using System.Linq;
 using System.Numerics;
-using Dalamud.Data;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;

@@ -2,11 +2,6 @@ using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Interface.Windowing;
 using rtyping.Windows;
-using Dalamud.Game.Gui;
-using Dalamud.Data;
-using ImGuiScene;
-using Dalamud.Game.ClientState.Party;
-using Dalamud.Game.ClientState;
 using System.Collections.Generic;
 using Dalamud.Game.Command;
 using Dalamud.ContextMenu;
@@ -38,6 +33,7 @@ namespace rtyping
         public PartyManager PartyManager { get; init; }
         public ContextMenuManager ContextMenuManager { get; init; }
         public WindowSystem WindowSystem = new("rtyping");
+        public IpcController IPCController;
         public IDalamudTextureWrap TypingTexture;
         public IDalamudTextureWrap TypingNameplateTexture;
         public List<string> TypingList;
@@ -46,6 +42,9 @@ namespace rtyping
         public ConfigWindow ConfigWindow;
         public ConsentWindow ConsentWindow;
         public TrustedListWindow TrustedListWindow;
+
+        public bool IsTyping = false;
+        public bool IpcTyping = false;
 
         public Plugin()
         {
@@ -61,6 +60,7 @@ namespace rtyping
             this.Client = new Client(this);
             this.PartyManager = new PartyManager(this);
             this.ContextMenuManager = new ContextMenuManager(this);
+            this.IPCController = new IpcController(this);
 
             PartyTypingUI = new PartyTypingUI(this);
             ConfigWindow = new ConfigWindow(this);
@@ -91,6 +91,7 @@ namespace rtyping
         public void Dispose()
         {
             WindowSystem.RemoveAllWindows();
+            IPCController.Dispose();
             this.Client.Dispose();
             this.ContextMenuManager.Dispose();
             CommandManager.RemoveHandler(CommandName);
@@ -123,5 +124,6 @@ namespace rtyping
             }
             return hash.ToString();
         }
+
     }
 }

@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-using Dalamud.Game.Gui;
 using Dalamud.Interface.Windowing;
-using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
+
 namespace rtyping.Windows;
 
 public class PartyTypingUI : Window, IDisposable
@@ -156,9 +155,11 @@ public class PartyTypingUI : Window, IDisposable
     {
         if (Plugin.ClientState.LocalPlayer == null) return;
         var typing = DetectTyping();
+        Plugin.IsTyping = typing || Plugin.IpcTyping;
+
         var party = Plugin.PartyManager.BuildPartyDictionary();
 
-        if (typing)
+        if (Plugin.IsTyping)
         {
             if (!wasTyping)
             {

@@ -1,4 +1,3 @@
-using Dalamud.Logging;
 using System;
 using System.Text;
 using System.Threading.Tasks;
