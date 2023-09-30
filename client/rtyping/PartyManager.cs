@@ -1,6 +1,7 @@
 using Dalamud.Game.ClientState.Party;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Memory;
+using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game.Group;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
@@ -30,12 +31,10 @@ namespace rtyping
     public class PartyManager
     {
         private Plugin Plugin;
-        private PartyList PartyList;
 
         public PartyManager(Plugin plugin)
         {
             this.Plugin = plugin;
-            this.PartyList = plugin.PartyList;
         }
 
         public IDictionary<string, Member> BuildPartyDictionary()
@@ -51,7 +50,7 @@ namespace rtyping
 
         public unsafe int GetPartyMemberCount()
         {
-            var manager = (GroupManager*)PartyList.GroupManagerAddress;
+            var manager = (GroupManager*)Plugin.PartyList.GroupManagerAddress;
             if (manager != null)
             {
                 if (manager->MemberCount != 0) return manager->MemberCount;
@@ -68,7 +67,7 @@ namespace rtyping
 
         public unsafe Member GetMemberByIndex(int i)
         {
-            var manager = (GroupManager*)PartyList.GroupManagerAddress;
+            var manager = (GroupManager*)Plugin.PartyList.GroupManagerAddress;
             if (GetPartyType() == "Party")
             {
                 var partyMember = manager->GetPartyMemberByIndex(i);
@@ -80,7 +79,7 @@ namespace rtyping
 
         public unsafe int GetMemberPosition(ulong cid)
         {
-            var manager = (GroupManager*)PartyList.GroupManagerAddress;
+            var manager = (GroupManager*)Plugin.PartyList.GroupManagerAddress;
             if (GetPartyType() == "Party")
             {
                 var agentHud = Framework.Instance()->UIModule->GetAgentModule()->GetAgentHUD();

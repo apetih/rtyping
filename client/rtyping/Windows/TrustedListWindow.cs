@@ -12,7 +12,6 @@ public class TrustedListWindow : Window, IDisposable
 {
     private Configuration Configuration;
     private Plugin Plugin;
-    private DataManager Data;
 
     public TrustedListWindow(Plugin plugin) : base(
         "Trusted Characters", ImGuiWindowFlags.None)
@@ -23,7 +22,6 @@ public class TrustedListWindow : Window, IDisposable
             MaximumSize = new Vector2(300, 600)
         };
         this.Plugin = plugin;
-        this.Data = plugin.DataManager;
         this.Configuration = plugin.Configuration;
     }
 
@@ -44,7 +42,7 @@ public class TrustedListWindow : Window, IDisposable
         {
             for (var i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
             {
-                var worldSheet = this.Data.GetExcelSheet<World>();
+                var worldSheet = Plugin.DataManager.GetExcelSheet<World>();
                 var worldRow = worldSheet!.GetRow(uint.Parse(trustedList[i].Split("@")[1]));
                 var worldName = "Unknown";
                 var characterName = trustedList[i].Split("@")[0];
