@@ -33,7 +33,7 @@ namespace rtyping
         public PartyManager PartyManager { get; init; }
         public ContextMenuManager ContextMenuManager { get; init; }
         public WindowSystem WindowSystem = new("rtyping");
-        public IpcController IPCController;
+        //public IpcController IPCController;
         public IDalamudTextureWrap TypingTexture;
         public IDalamudTextureWrap TypingNameplateTexture;
         public List<string> TypingList;
@@ -60,7 +60,7 @@ namespace rtyping
             this.Client = new Client(this);
             this.PartyManager = new PartyManager(this);
             this.ContextMenuManager = new ContextMenuManager(this);
-            this.IPCController = new IpcController(this);
+            //this.IPCController = new IpcController(this);
 
             PartyTypingUI = new PartyTypingUI(this);
             ConfigWindow = new ConfigWindow(this);
@@ -91,7 +91,7 @@ namespace rtyping
         public void Dispose()
         {
             WindowSystem.RemoveAllWindows();
-            IPCController.Dispose();
+            //IPCController.Dispose();
             this.Client.Dispose();
             this.ContextMenuManager.Dispose();
             CommandManager.RemoveHandler(CommandName);
