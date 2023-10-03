@@ -36,8 +36,8 @@ public class ConsentWindow : Window, IDisposable
         if (!understood) ImGui.BeginDisabled();
         if (ImGui.Button("I really understand"))
         {
-            this.Configuration.ShownConsentMenu = true;
-            this.Configuration.Save();
+            Configuration.ShownConsentMenu = true;
+            Configuration.Save();
             this.IsOpen = false;
         }
 

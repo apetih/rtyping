@@ -2,16 +2,13 @@ using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Interface.Windowing;
 using rtyping.Windows;
-using Dalamud.Game.Gui;
-using Dalamud.Data;
-using ImGuiScene;
-using Dalamud.Game.ClientState.Party;
-using Dalamud.Game.ClientState;
 using System.Collections.Generic;
 using Dalamud.Game.Command;
 using Dalamud.ContextMenu;
 using System.Security.Cryptography;
 using System.Text;
+using Dalamud.Plugin.Services;
+using Dalamud.Interface.Internal;
 
 namespace rtyping
 {
@@ -20,97 +17,103 @@ namespace rtyping
         public string Name => "RTyping";
         private const string CommandName = "/rtyping";
 
-        private DalamudPluginInterface PluginInterface { get; init; }
-        private CommandManager CommandManager { get; init; }
-        public GameGui GameGui { get; init; }
-        public DataManager DataManager { get; init; }
+        [PluginService] public static DalamudPluginInterface PluginInterface { get; private set; } = null!;
+        [PluginService] public static ICommandManager CommandManager { get; private set; } = null!;
+        [PluginService] public static IGameGui GameGui { get; private set; } = null!;
+        [PluginService] public static IDataManager DataManager { get; private set; } = null!;
+        [PluginService] public static ITextureProvider TextureProvider { get; private set; } = null!;
+        [PluginService] public static IPartyList PartyList { get; private set; } = null!;
+        [PluginService] public static IClientState ClientState { get; private set; } = null!;
+        [PluginService] public static IChatGui ChatGui { get; private set; } = null!;
+
         public Configuration Configuration { get; init; }
         public DalamudContextMenu ContextMenu { get; init; }
-        [PluginService] public PartyList PartyList { get; init; }
-        [PluginService] public ClientState ClientState { get; init; }
-        [PluginService] public ChatGui ChatGui { get; init; }
+
         public Client Client { get; init; }
         public PartyManager PartyManager { get; init; }
         public ContextMenuManager ContextMenuManager { get; init; }
         public WindowSystem WindowSystem = new("rtyping");
-        public TextureWrap TypingTexture;
-        public TextureWrap TypingNameplateTexture;
+        //public IpcController IPCController;
+        public IDalamudTextureWrap TypingTexture;
+        public IDalamudTextureWrap TypingNameplateTexture;
         public List<string> TypingList;
 
-        public Plugin(
-            DalamudPluginInterface pluginInterface,
-            CommandManager commandManager,
-            GameGui gameGui,
-            ChatGui chatGui,
-            DataManager dataManager,
-            PartyList partyList,
-            ClientState clientState)
+        public PartyTypingUI PartyTypingUI;
+        public ConfigWindow ConfigWindow;
+        public ConsentWindow ConsentWindow;
+        public TrustedListWindow TrustedListWindow;
+
+        public bool IsTyping = false;
+        public bool IpcTyping = false;
+
+        public Plugin()
         {
-            this.PluginInterface = pluginInterface;
-            this.CommandManager = commandManager;
-            this.GameGui = gameGui;
-            this.ChatGui = chatGui;
-            this.DataManager = dataManager;
-            this.PartyList = partyList;
-            this.ClientState = clientState;
-            this.ContextMenu = new DalamudContextMenu();
-
+            this.ContextMenu = new DalamudContextMenu(PluginInterface);
             this.TypingList = new List<string>();
-            TypingTexture = DataManager.GetImGuiTexture("ui/uld/charamake_dataimport.tex");
-            TypingNameplateTexture = DataManager.GetImGuiTextureIcon(61397);
 
-            this.Configuration = this.PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
-            this.Configuration.Initialize(this.PluginInterface);
+            TypingTexture = TextureProvider.GetTextureFromGame("ui/uld/charamake_dataimport.tex")!;
+            TypingNameplateTexture = TextureProvider.GetIcon(61397)!;
+
+            Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
+            Configuration.Initialize(PluginInterface);
 
             this.Client = new Client(this);
             this.PartyManager = new PartyManager(this);
             this.ContextMenuManager = new ContextMenuManager(this);
+            //this.IPCController = new IpcController(this);
 
-            WindowSystem.AddWindow(new PartyTypingUI(this, GameGui));
-            WindowSystem.AddWindow(new ConfigWindow(this));
-            WindowSystem.AddWindow(new ConsentWindow(this));
-            WindowSystem.AddWindow(new TrustedListWindow(this));
+            PartyTypingUI = new PartyTypingUI(this);
+            ConfigWindow = new ConfigWindow(this);
+            ConsentWindow = new ConsentWindow(this);
+            TrustedListWindow = new TrustedListWindow(this);
 
-            this.CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
+            WindowSystem.AddWindow(PartyTypingUI);
+            WindowSystem.AddWindow(ConfigWindow);
+            WindowSystem.AddWindow(ConsentWindow);
+            WindowSystem.AddWindow(TrustedListWindow);
+
+            CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
             {
                 HelpMessage = "Opens plugin configuration"
             });
 
-            this.PluginInterface.UiBuilder.Draw += DrawUI;
-            this.PluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
+            PluginInterface.UiBuilder.Draw += DrawUI;
+            PluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
 
-            WindowSystem.GetWindow("PartyTypingStatus").IsOpen = true;
+            PartyTypingUI.IsOpen = true;
         }
 
         private void OnCommand(string command, string args)
         {
-            WindowSystem.GetWindow("RTyping Configuration").IsOpen = !WindowSystem.GetWindow("RTyping Configuration").IsOpen;
+            ConfigWindow.Toggle();
         }
 
         public void Dispose()
         {
-            this.WindowSystem.RemoveAllWindows();
+            WindowSystem.RemoveAllWindows();
+            //IPCController.Dispose();
             this.Client.Dispose();
             this.ContextMenuManager.Dispose();
-            this.CommandManager.RemoveHandler(CommandName);
+            ContextMenu.Dispose();
+            CommandManager.RemoveHandler(CommandName);
         }
 
         private void DrawUI()
         {
             this.WindowSystem.Draw();
-            if (!this.Configuration.ShownConsentMenu) WindowSystem.GetWindow("RTyping Welcome").IsOpen = true;
+            if (!this.Configuration.ShownConsentMenu) ConsentWindow.IsOpen = true;
         }
 
         public void DrawConfigUI()
         {
-            WindowSystem.GetWindow("RTyping Configuration").IsOpen = true;
+            ConfigWindow.Toggle();
         }
         public void DrawTrustedListUI()
         {
-            WindowSystem.GetWindow("Trusted Characters").IsOpen = true;
+            TrustedListWindow.IsOpen = true;
         }
 
-        public string HashContentID(ulong cid)
+        public static string HashContentID(ulong cid)
         {
             var crypt = SHA256.Create();
             var hash = new StringBuilder();
@@ -122,5 +125,6 @@ namespace rtyping
             }
             return hash.ToString();
         }
+
     }
 }

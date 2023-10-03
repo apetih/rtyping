@@ -1,4 +1,3 @@
-using Dalamud.Logging;
 using System;
 using System.Text;
 using System.Threading.Tasks;
@@ -38,7 +37,7 @@ namespace rtyping
         internal State _status { get; private set; } = State.Disconnected;
         private bool disposed = false;
 
-        private readonly string wsVer = "sixdotfour";
+        private readonly string wsVer = "sixfiveithink";
 
         public bool IsConnected => this.wsClient.Connected;
         public bool IsDisposed => this.disposed;
@@ -51,26 +50,26 @@ namespace rtyping
             this.wsClient.ServerDisconnected += WsClient_ServerDisconnected;
             this.wsClient.MessageReceived += WsClient_MessageReceived;
 
-            this.Plugin.ClientState.Login += this.Login;
-            this.Plugin.ClientState.Logout += this.Logout;
+            Plugin.ClientState.Login += this.Login;
+            Plugin.ClientState.Logout += this.Logout;
 
-            if (this.Plugin.ClientState.IsLoggedIn)
+            if (Plugin.ClientState.IsLoggedIn)
             {
                 this.active = true;
-                this.Connect();
+                Login();
             }
         }
 
         private async Task Connect()
         {
-            if (this.Plugin.ClientState.LocalPlayer == null)
+            if (Plugin.ClientState.LocalPlayer == null)
             {
                 await Task.Delay(3000);
-                Connect();
+                await Connect();
                 return;
             }
 
-            this.Identifier = this.Plugin.HashContentID(this.Plugin.ClientState.LocalContentId);
+            this.Identifier = Plugin.HashContentID(Plugin.ClientState.LocalContentId);
 
             if (!this.active) return;
             if (this._status == State.Connected || this._status == State.Error) return;
@@ -82,16 +81,16 @@ namespace rtyping
             if (!this.wsClient.Connected) await Task.Run(async () =>
             {
                 await Task.Delay(3000);
-                Connect();
+                await Connect();
             });
         }
 
-        private void Login(object? sender, EventArgs e)
+        private async void Login()
         {
             this.active = true;
-            this.Connect();
+            await this.Connect();
         }
-        private void Logout(object? sender, EventArgs e)
+        private void Logout()
         {
             this.active = false;
             this._status = State.Disconnected;
@@ -138,7 +137,7 @@ namespace rtyping
                     this.active = false;
                     this._status = State.Error;
                     this.Dispose();
-                    this.Plugin.ChatGui.PrintChat(new XivChatEntry
+                    Plugin.ChatGui.Print(new XivChatEntry
                     {
                         Message = "Connection to RTyping Server denied. Plugin version does not match.",
                         Type = XivChatType.Urgent,
@@ -147,19 +146,19 @@ namespace rtyping
             }
         }
 
-        private void WsClient_ServerDisconnected(object? sender, EventArgs e)
+        private async void WsClient_ServerDisconnected(object? sender, EventArgs e)
         {
             Plugin.TypingList.Clear();
 
             if (this.active)
             {
-                if (this.Plugin.Configuration.ServerChat) this.Plugin.ChatGui.PrintChat(new XivChatEntry
+                if (this.Plugin.Configuration.ServerChat) Plugin.ChatGui.Print(new XivChatEntry
                 {
                     Message = "Lost connection to RTyping Server. Attempting to reconnect.",
                     Type = XivChatType.Urgent,
                 });
                 this._status = State.Disconnected;
-                Connect();
+                await Connect();
             }
             else
                 if (this._status != State.Error) this._status = State.Disconnected;
@@ -169,7 +168,7 @@ namespace rtyping
         {
             this._status = State.Connected;
             Plugin.TypingList.Clear();
-            if (this.Plugin.Configuration.ServerChat) this.Plugin.ChatGui.PrintChat(new XivChatEntry
+            if (this.Plugin.Configuration.ServerChat) Plugin.ChatGui.Print(new XivChatEntry
             {
                 Message = "Connection successful to RTyping Server.",
                 Type = XivChatType.Notice,
@@ -181,8 +180,8 @@ namespace rtyping
             if (this.IsDisposed) return;
             this.disposed = true;
             this.active = false;
-            this.Plugin.ClientState.Login -= this.Login;
-            this.Plugin.ClientState.Logout -= this.Logout;
+            Plugin.ClientState.Login -= this.Login;
+            Plugin.ClientState.Logout -= this.Logout;
             wsClient.Dispose();
         }
     }

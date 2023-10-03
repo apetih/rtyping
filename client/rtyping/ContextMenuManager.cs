@@ -28,7 +28,8 @@ namespace rtyping
             this.Plugin.Configuration.TrustedCharacters.Remove(this.SelectedPlayer);
             this.Plugin.Configuration.TrustedCharacters = trustedList;
             this.Plugin.Configuration.Save();
-            this.Plugin.ChatGui.PrintChat(new XivChatEntry
+
+            Plugin.ChatGui.Print(new XivChatEntry
             {
                 Message = $"[RTyping] {SelectedPlayer.Split("@")[0]} has been removed as a trusted character.",
                 Type = XivChatType.SystemMessage,
@@ -42,7 +43,8 @@ namespace rtyping
             this.Plugin.Configuration.TrustedCharacters.Add(this.SelectedPlayer);
             this.Plugin.Configuration.TrustedCharacters = trustedList;
             this.Plugin.Configuration.Save();
-            this.Plugin.ChatGui.PrintChat(new XivChatEntry
+
+            Plugin.ChatGui.Print(new XivChatEntry
             {
                 Message = $"[RTyping] {SelectedPlayer.Split("@")[0]} has been added as a trusted character.",
                 Type = XivChatType.SystemMessage,
@@ -55,7 +57,7 @@ namespace rtyping
             if (this.Plugin.Configuration.TrustAnyone) return;
             var trustedList = this.Plugin.Configuration.TrustedCharacters;
             this.SelectedPlayer = $"{args.Text}@{args.ObjectWorld}";
-            if (this.SelectedPlayer == $"{this.Plugin.ClientState.LocalPlayer!.Name}@{this.Plugin.ClientState.LocalPlayer!.HomeWorld.Id}") return;
+            if (this.SelectedPlayer == $"{Plugin.ClientState.LocalPlayer!.Name}@{Plugin.ClientState.LocalPlayer!.HomeWorld.Id}") return;
             if (trustedList.Contains(this.SelectedPlayer))
                 args.AddCustomItem(this.removeTrustedItem);
             else
