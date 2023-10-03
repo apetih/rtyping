@@ -37,7 +37,7 @@ namespace rtyping
         internal State _status { get; private set; } = State.Disconnected;
         private bool disposed = false;
 
-        private readonly string wsVer = "sixdotfour";
+        private readonly string wsVer = "sixfiveithink";
 
         public bool IsConnected => this.wsClient.Connected;
         public bool IsDisposed => this.disposed;
