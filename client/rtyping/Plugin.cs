@@ -94,6 +94,7 @@ namespace rtyping
             //IPCController.Dispose();
             this.Client.Dispose();
             this.ContextMenuManager.Dispose();
+            ContextMenu.Dispose();
             CommandManager.RemoveHandler(CommandName);
         }
 
