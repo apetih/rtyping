@@ -45,6 +45,17 @@ namespace rtyping
             }
             return PartyDictionary;
         }
+        public IDictionary<string, Member> BuildTrustedPartyDictionary()
+        {
+            var PartyDictionary = new Dictionary<string, Member>();
+            for (var i = 0; i < GetPartyMemberCount(); i++)
+            {
+                var member = GetMemberByIndex(i);
+                if (!Plugin.Configuration.TrustedCharacters.Contains($"{member.Name}@{member.World}")) continue;
+                PartyDictionary.Add(Plugin.HashContentID(member.ContentID), member);
+            }
+            return PartyDictionary;
+        }
 
         public unsafe int GetPartyMemberCount()
         {
