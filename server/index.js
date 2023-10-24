@@ -10,8 +10,8 @@ const {
 } = require("socket.io");
 
 const server = createServer({
-    cert: readFileSync(process.env.CLOUDFLARECERT),
-    key: readFileSync(process.env.CLOUDFLAREKEY)
+    cert: readFileSync(process.env.CERT),
+    key: readFileSync(process.env.KEY)
 });
 
 const io = new Server(server, {});
