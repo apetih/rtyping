@@ -33,28 +33,34 @@ public class ConfigWindow : Window, IDisposable
     private bool understood = false;
     public unsafe override void Draw()
     {
-
-        if (ImGuiComponents.IconButton("KoFi", FontAwesomeIcon.Coffee, new Vector4(1.0f, 0.35f, 0.37f, 1.0f)))
-            Process.Start(new ProcessStartInfo { FileName = "https://ko-fi.com/apetih", UseShellExecute = true });
-        if (ImGui.IsItemHovered())
-            ImGui.SetTooltip("Support me on Ko-Fi");
+        if (!this.Configuration.HideKofi)
+        {
+            if (ImGuiComponents.IconButton("KoFi", FontAwesomeIcon.Coffee, new Vector4(1.0f, 0.35f, 0.37f, 1.0f)))
+                Process.Start(new ProcessStartInfo { FileName = "https://ko-fi.com/apetih", UseShellExecute = true });
+            if (ImGui.IsItemHovered())
+                ImGui.SetTooltip("Support me on Ko-Fi");
+        }
 
         ImGui.SameLine();
 
         ImGui.Text("Server Status: ");
         ImGui.SameLine();
-        switch (Plugin.Client._status)
+        switch (Plugin.Client.Status)
         {
             case Client.State.Disconnected:
                 ImGui.TextColored(new Vector4(0.4f, 0.4f, 0.4f, 1.0f), "Disconnected.");
                 break;
 
-            case Client.State.Connecting:
-                ImGui.TextColored(new Vector4(0.0f, 0.88f, 0.88f, 1.0f), "Connecting...");
+            case Client.State.Error:
+                ImGui.TextColored(new Vector4(1.0f, 0.0f, 0.0f, 1.0f), "Error. Reload plugin.");
                 break;
 
-            case Client.State.Error:
-                ImGui.TextColored(new Vector4(1.0f, 0.0f, 0.0f, 1.0f), "Error.");
+            case Client.State.Reconnecting:
+                ImGui.TextColored(new Vector4(0.0f, 0.88f, 0.88f, 1.0f), "Reconnecting...");
+                break;
+
+            case Client.State.Mismatch:
+                ImGui.TextColored(new Vector4(1.0f, 0.0f, 0.0f, 1.0f), "Outdated Version.");
                 break;
 
             case Client.State.Connected:
@@ -63,7 +69,9 @@ public class ConfigWindow : Window, IDisposable
         }
 
         ImGui.Spacing();
+
         var selfMarkerValue = this.Configuration.DisplaySelfMarker;
+        var kofiDisabled = this.Configuration.HideKofi;
         var partyOpacity = this.Configuration.PartyMarkerOpacity;
         var selfNamePlateValue = this.Configuration.DisplaySelfNamePlateMarker;
         var othersNamePlateValue = this.Configuration.DisplayOthersNamePlateMarker;
@@ -72,9 +80,26 @@ public class ConfigWindow : Window, IDisposable
         var nameplateOpacity = this.Configuration.NameplateMarkerOpacity;
         var chatValue = this.Configuration.ServerChat;
         var trustAnyone = this.Configuration.TrustAnyone;
+
         if (ImGui.BeginTabBar("Config", ImGuiTabBarFlags.None))
         {
             if (ImGui.BeginTabItem("General"))
+            {
+                if (ImGui.Checkbox("Show server status chat messages", ref chatValue))
+                {
+                    this.Configuration.ServerChat = chatValue;
+                    this.Configuration.Save();
+                }
+
+                if (ImGui.Checkbox("Hide Ko-Fi button", ref kofiDisabled))
+                {
+                    this.Configuration.HideKofi = kofiDisabled;
+                    this.Configuration.Save();
+                }
+
+                ImGui.EndTabItem();
+            }
+            if (ImGui.BeginTabItem("Trusted Settings"))
             {
                 if (trustAnyone) ImGui.BeginDisabled();
                 if (ImGui.Button("Manage Trusted Characters"))
@@ -121,13 +146,6 @@ public class ConfigWindow : Window, IDisposable
                     if (!understood) ImGui.EndDisabled();
                     ImGui.EndPopup();
                 }
-
-                if (ImGui.Checkbox("Show server status chat messages", ref chatValue))
-                {
-                    this.Configuration.ServerChat = chatValue;
-                    this.Configuration.Save();
-                }
-
                 ImGui.EndTabItem();
             }
             if (ImGui.BeginTabItem("Party"))

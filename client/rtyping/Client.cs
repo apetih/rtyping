@@ -1,187 +1,164 @@
 using System;
-using System.Text;
-using System.Threading.Tasks;
-
-using WatsonWebsocket;
-using Newtonsoft.Json;
-using Dalamud.Game.Text;
+using System.Collections.Generic;
 
 namespace rtyping
 {
 
-    class Message
-    {
-        public int Command;
-        public string Content;
-
-        public Message(int command, string content)
-        {
-            this.Command = command;
-            this.Content = content;
-        }
-    }
-
     public class Client : IDisposable
     {
+
+        private Plugin Plugin;
+        private SocketIOClient.SocketIO wsClient = new("wss://rtyping.apetih.com:8443", new SocketIOClient.SocketIOOptions
+        {
+            Transport = SocketIOClient.Transport.TransportProtocol.WebSocket,
+            ReconnectionAttempts = 3,
+            ReconnectionDelay = 2500,
+            ReconnectionDelayMax = 3000,
+            RandomizationFactor = 0.1,
+        });
+
+        private readonly string wsVer = "rewritesomewhat";
+
         internal enum State
         {
             Disconnected,
-            Connecting,
+            Connected,
+            Reconnecting,
             Error,
-            Connected
+            Mismatch
         }
-        private Plugin Plugin { get; }
-        private WatsonWsClient wsClient;
-        private bool active;
-        private string Identifier;
-        internal State _status { get; private set; } = State.Disconnected;
-        private bool disposed = false;
 
-        private readonly string wsVer = "sixfiveithink";
+        internal State Status = State.Disconnected;
 
-        public bool IsConnected => this.wsClient.Connected;
-        public bool IsDisposed => this.disposed;
         public Client(Plugin plugin)
         {
             this.Plugin = plugin;
 
-            this.wsClient = new WatsonWsClient("rtyping.apetih.com", 8443, true);
-            this.wsClient.ServerConnected += WsClient_ServerConnected;
-            this.wsClient.ServerDisconnected += WsClient_ServerDisconnected;
-            this.wsClient.MessageReceived += WsClient_MessageReceived;
-
             Plugin.ClientState.Login += this.Login;
             Plugin.ClientState.Logout += this.Logout;
 
+
+            wsClient.On("startTyping", OnStartTyping);
+            wsClient.On("stopTyping", OnStopTyping);
+            wsClient.On("mismatch", OnMismatch);
+
+            wsClient.OnConnected += WsClient_OnConnected;
+            wsClient.OnDisconnected += WsClient_OnDisconnected;
+            wsClient.OnReconnectAttempt += WsClient_OnReconnectAttempt;
+            wsClient.OnReconnectFailed += WsClient_OnReconnectFailed;
+
             if (Plugin.ClientState.IsLoggedIn)
             {
-                this.active = true;
                 Login();
             }
         }
 
-        private async Task Connect()
+        private void Login()
         {
-            if (Plugin.ClientState.LocalPlayer == null)
-            {
-                await Task.Delay(3000);
-                await Connect();
-                return;
-            }
-
-            this.Identifier = Plugin.HashContentID(Plugin.ClientState.LocalContentId);
-
-            if (!this.active) return;
-            if (this._status == State.Connected || this._status == State.Error) return;
-
-            this._status = State.Connecting;
-
-            await this.wsClient.StartWithTimeoutAsync(30);
-
-            if (!this.wsClient.Connected) await Task.Run(async () =>
-            {
-                await Task.Delay(3000);
-                await Connect();
-            });
+            if (wsClient.Connected) return;
+            Connect();
         }
 
-        private async void Login()
+        private async void Logout()
         {
-            this.active = true;
-            await this.Connect();
-        }
-        private void Logout()
-        {
-            this.active = false;
-            this._status = State.Disconnected;
-            if (this.wsClient.Connected) this.wsClient.Stop();
-        }
-        public void SendTyping(string Party)
-        {
-            if (!this.active || !this.wsClient.Connected) return;
-            wsClient.SendAsync(JsonConvert.SerializeObject(new Message(1, Party)));
-        }
-        public void SendStoppedTyping(string Party)
-        {
-            if (!this.active || !this.wsClient.Connected) return;
-            wsClient.SendAsync(JsonConvert.SerializeObject(new Message(2, Party)));
-        }
-        private void WsClient_MessageReceived(object? sender, MessageReceivedEventArgs e)
-        {
-            var message = JsonConvert.DeserializeObject<Message>(Encoding.UTF8.GetString(e.Data));
-            if (message == null) return;
-            string[] objectIDs;
-            switch (message.Command)
-            {
-                case 0: // Identify socket
-                    wsClient.SendAsync(JsonConvert.SerializeObject(new Message(0, this.Identifier)));
-                    break;
-
-                case 1: // Typing
-                    objectIDs = message.Content.Split(",");
-                    for (var i = 0; i < objectIDs.Length; i++)
-                        if (!Plugin.TypingList.Contains(objectIDs[i])) Plugin.TypingList.Add(objectIDs[i]);
-                    break;
-
-                case 2: // Stopped Typing
-                    objectIDs = message.Content.Split(",");
-                    for (var i = 0; i < objectIDs.Length; i++)
-                        if (Plugin.TypingList.Contains(objectIDs[i])) Plugin.TypingList.Remove(objectIDs[i]);
-                    break;
-
-                case 3: // Verify server version
-                    wsClient.SendAsync(JsonConvert.SerializeObject(new Message(3, this.wsVer)));
-                    break;
-
-                case 4: // Server version mismatch
-                    this.active = false;
-                    this._status = State.Error;
-                    this.Dispose();
-                    Plugin.ChatGui.Print(new XivChatEntry
-                    {
-                        Message = "Connection to RTyping Server denied. Plugin version does not match.",
-                        Type = XivChatType.Urgent,
-                    });
-                    break;
-            }
+            if (!wsClient.Connected) return;
+            await wsClient.DisconnectAsync();
+            Plugin.TypingManager.TypingList.Clear();
         }
 
-        private async void WsClient_ServerDisconnected(object? sender, EventArgs e)
+        private async void Connect()
         {
-            Plugin.TypingList.Clear();
-
-            if (this.active)
-            {
-                if (this.Plugin.Configuration.ServerChat) Plugin.ChatGui.Print(new XivChatEntry
+            wsClient.Options.Query = new List<KeyValuePair<string, string>>
                 {
-                    Message = "Lost connection to RTyping Server. Attempting to reconnect.",
-                    Type = XivChatType.Urgent,
-                });
-                this._status = State.Disconnected;
-                await Connect();
-            }
-            else
-                if (this._status != State.Error) this._status = State.Disconnected;
-        }
-
-        private void WsClient_ServerConnected(object? sender, EventArgs e)
-        {
-            this._status = State.Connected;
-            Plugin.TypingList.Clear();
-            if (this.Plugin.Configuration.ServerChat) Plugin.ChatGui.Print(new XivChatEntry
+                    new KeyValuePair<string, string>("version", wsVer),
+                    new KeyValuePair<string, string>("ContentID", Plugin.HashContentID(Plugin.ClientState.LocalContentId))
+                };
+            try
             {
-                Message = "Connection successful to RTyping Server.",
-                Type = XivChatType.Notice,
-            });
+                await wsClient.ConnectAsync();
+            } catch (Exception ex)
+            {
+                Plugin.Log.Error("Unable to connect to RTyping server.");
+            }
         }
 
-        public void Dispose()
+        public async void EmitStartTyping(string Service, List<string> Party)
         {
-            if (this.IsDisposed) return;
-            this.disposed = true;
-            this.active = false;
+            await wsClient.EmitAsync("startTyping", Service, Party);
+        }
+
+        public async void EmitStopTyping(string Service, List<string> Party)
+        {
+            await wsClient.EmitAsync("stopTyping", Service, Party);
+        }
+
+        private void OnStartTyping(SocketIOClient.SocketIOResponse Message)
+        {
+            var Service = Message.GetValue<string>();
+            var ContentID = Message.GetValue<string>(1);
+            if (Service != "rtyping")
+            {
+                //Handle IPC
+                Plugin.IPCController.SendOnTypingReceive(Service, ContentID, true);
+                if (Service != "all") return;
+            }
+            if (!Plugin.TypingManager.TypingList.ContainsKey(ContentID))
+            {
+                Plugin.TypingManager.TypingList.Add(ContentID, 0);
+            }
+            Plugin.TypingManager.TypingList[ContentID] = Environment.TickCount64 + 20000;
+        }
+
+        private void OnStopTyping(SocketIOClient.SocketIOResponse Message)
+        {
+            var Service = Message.GetValue<string>();
+            var ContentID = Message.GetValue<string>(1);
+            if (Service != "rtyping")
+            {
+                //Handle IPC
+                Plugin.IPCController.SendOnTypingReceive(Service, ContentID, false);
+                if (Service != "all") return;
+            }
+            if (!Plugin.TypingManager.TypingList.ContainsKey(ContentID)) return;
+            Plugin.TypingManager.TypingList.Remove(ContentID);
+        }
+
+        private void OnMismatch(SocketIOClient.SocketIOResponse Message)
+        {
+            Plugin.ChatGui.PrintError("Connection to RTyping Server denied. Plugin version does not match.", "RTyping", 16);
+            Status = State.Mismatch;
+            Logout();
+        }
+
+        private void WsClient_OnConnected(object? sender, EventArgs e)
+        {
+            Status = State.Connected;
+            Plugin.ChatGui.Print("Connection successful to RTyping Server.", "RTyping", 60);
+        }
+
+        private void WsClient_OnDisconnected(object? sender, string e)
+        {
+            if (Status != State.Mismatch) Status = State.Disconnected;
+            Plugin.ChatGui.PrintError("Disconnected from RTyping Server.", "RTyping", 16);
+        }
+
+        private void WsClient_OnReconnectAttempt(object? sender, int e)
+        {
+            Status = State.Reconnecting;
+            Plugin.ChatGui.Print("Attempting to reconnect.", "RTyping", 9);
+        }
+
+        private void WsClient_OnReconnectFailed(object? sender, EventArgs e)
+        {
+            Status = State.Error;
+            Plugin.ChatGui.PrintError("Failed to reconnect after three attempts. Please wait a bit before attempting to reconnect.", "RTyping", 16);
+        }
+
+        public async void Dispose()
+        {
             Plugin.ClientState.Login -= this.Login;
             Plugin.ClientState.Logout -= this.Logout;
+            if (Status == State.Connected || Status == State.Reconnecting) await wsClient.DisconnectAsync();
             wsClient.Dispose();
         }
     }

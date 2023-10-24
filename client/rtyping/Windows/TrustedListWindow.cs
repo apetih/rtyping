@@ -29,6 +29,10 @@ public class TrustedListWindow : Window, IDisposable
     public unsafe override void Draw()
     {
         var trustedList = this.Configuration.TrustedCharacters;
+        if (ImGui.Button("Add Trusted Character"))
+        {
+            Plugin.AddTrustedWindow.IsOpen = true;
+        }
         ImGui.BeginChild("Characters", new Vector2(0, 0), true, ImGuiWindowFlags.None);
         ImGuiListClipperPtr clipper;
         unsafe

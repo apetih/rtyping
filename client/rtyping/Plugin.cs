@@ -2,7 +2,6 @@ using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Interface.Windowing;
 using rtyping.Windows;
-using System.Collections.Generic;
 using Dalamud.Game.Command;
 using Dalamud.ContextMenu;
 using System.Security.Cryptography;
@@ -24,32 +23,31 @@ namespace rtyping
         [PluginService] public static ITextureProvider TextureProvider { get; private set; } = null!;
         [PluginService] public static IPartyList PartyList { get; private set; } = null!;
         [PluginService] public static IClientState ClientState { get; private set; } = null!;
+        [PluginService] public static IFramework Framework { get; private set; } = null!;
         [PluginService] public static IChatGui ChatGui { get; private set; } = null!;
+        [PluginService] public static IPluginLog Log { get; private set; } = null!;
 
         public Configuration Configuration { get; init; }
         public DalamudContextMenu ContextMenu { get; init; }
 
         public Client Client { get; init; }
+        public TypingManager TypingManager { get; init; }
         public PartyManager PartyManager { get; init; }
         public ContextMenuManager ContextMenuManager { get; init; }
         public WindowSystem WindowSystem = new("rtyping");
-        //public IpcController IPCController;
+        public IpcController IPCController;
         public IDalamudTextureWrap TypingTexture;
         public IDalamudTextureWrap TypingNameplateTexture;
-        public List<string> TypingList;
 
         public PartyTypingUI PartyTypingUI;
         public ConfigWindow ConfigWindow;
         public ConsentWindow ConsentWindow;
         public TrustedListWindow TrustedListWindow;
-
-        public bool IsTyping = false;
-        public bool IpcTyping = false;
+        public AddTrustedWindow AddTrustedWindow;
 
         public Plugin()
         {
             this.ContextMenu = new DalamudContextMenu(PluginInterface);
-            this.TypingList = new List<string>();
 
             TypingTexture = TextureProvider.GetTextureFromGame("ui/uld/charamake_dataimport.tex")!;
             TypingNameplateTexture = TextureProvider.GetIcon(61397)!;
@@ -58,19 +56,22 @@ namespace rtyping
             Configuration.Initialize(PluginInterface);
 
             this.Client = new Client(this);
+            this.TypingManager = new TypingManager(this);
             this.PartyManager = new PartyManager(this);
             this.ContextMenuManager = new ContextMenuManager(this);
-            //this.IPCController = new IpcController(this);
+            this.IPCController = new IpcController(this);
 
             PartyTypingUI = new PartyTypingUI(this);
             ConfigWindow = new ConfigWindow(this);
             ConsentWindow = new ConsentWindow(this);
             TrustedListWindow = new TrustedListWindow(this);
+            AddTrustedWindow = new AddTrustedWindow(this);
 
             WindowSystem.AddWindow(PartyTypingUI);
             WindowSystem.AddWindow(ConfigWindow);
             WindowSystem.AddWindow(ConsentWindow);
             WindowSystem.AddWindow(TrustedListWindow);
+            WindowSystem.AddWindow(AddTrustedWindow);
 
             CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
             {
@@ -91,10 +92,11 @@ namespace rtyping
         public void Dispose()
         {
             WindowSystem.RemoveAllWindows();
-            //IPCController.Dispose();
+            IPCController.Dispose();
             this.Client.Dispose();
             this.ContextMenuManager.Dispose();
             ContextMenu.Dispose();
+            TypingManager.Dispose();
             CommandManager.RemoveHandler(CommandName);
         }
 

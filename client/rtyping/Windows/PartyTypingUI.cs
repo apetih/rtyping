@@ -69,9 +69,14 @@ public class PartyTypingUI : Window, IDisposable
     private unsafe void DrawPartyMemberNameplateTyping(IDictionary<string, Member> party, string cid)
     {
         var ui3DModule = Framework.Instance()->GetUiModule()->GetUI3DModule();
-        var oid = party[cid].ObjectID;
+        uint oid;
 
         if (cid == Plugin.HashContentID(Plugin.ClientState.LocalContentId) && Plugin.ClientState.LocalPlayer != null) oid = Plugin.ClientState.LocalPlayer.ObjectId;
+        else
+        {
+            if (!party.ContainsKey(cid)) return;
+            oid = party[cid].ObjectID;
+        }
 
         AddonNamePlate.NamePlateObject* npObj = null;
         var distance = 0;
@@ -116,30 +121,16 @@ public class PartyTypingUI : Window, IDisposable
         }
     }
 
-    private unsafe bool DetectTyping()
-    {
-        var chatlog = (AtkUnitBase*)Plugin.GameGui.GetAddonByName("ChatLog", 1);
-
-        if (chatlog == null) return false;
-        if (!chatlog->IsVisible) return false;
-
-        var textInput = chatlog->UldManager.NodeList[15];
-        var chatCursor = textInput->GetAsAtkComponentNode()->Component->UldManager.NodeList[14];
-
-        if (!chatCursor->IsVisible) return false;
-        return true;
-    }
-
     private unsafe void DrawPartyTypingStatus(IDictionary<string, Member> party)
     {
-        var trustedList = this.Plugin.Configuration.TrustedCharacters;
-        var trustAnyone = this.Plugin.Configuration.TrustAnyone;
+        var trustedList = Plugin.Configuration.TrustedCharacters;
+        var trustAnyone = Plugin.Configuration.TrustAnyone;
 
         foreach (var cid in party.Keys)
         {
             var member = party[cid];
             if (!trustedList.Contains($"{member.Name}@{member.World}") && !trustAnyone) continue;
-            if (Plugin.TypingList.Contains(cid))
+            if (Plugin.TypingManager.TypingList.ContainsKey(cid))
             {
                 DrawPartyMemberTyping(member.Position);
                 if (Plugin.Configuration.DisplayOthersNamePlateMarker)
@@ -149,35 +140,18 @@ public class PartyTypingUI : Window, IDisposable
         }
     }
 
-    private bool wasTyping = false;
-
     public override void Draw()
     {
         if (Plugin.ClientState.LocalPlayer == null) return;
-        var typing = DetectTyping();
-        Plugin.IsTyping = typing || Plugin.IpcTyping;
 
         var party = Plugin.PartyManager.BuildPartyDictionary();
 
-        if (Plugin.IsTyping)
+        if (Plugin.TypingManager.SelfTyping)
         {
-            if (!wasTyping)
-            {
-                wasTyping = true;
-                if (string.Join(",", party.Keys) != "" && !this.Plugin.Client.IsDisposed) Plugin.Client.SendTyping(string.Join(",", party.Keys));
-            }
             if (Plugin.Configuration.DisplaySelfMarker)
                 DrawPartyMemberTyping(0);
             if (Plugin.Configuration.DisplaySelfNamePlateMarker)
                 DrawPartyMemberNameplateTyping(party, Plugin.HashContentID(Plugin.ClientState.LocalContentId));
-        }
-        else
-        {
-            if (wasTyping)
-            {
-                wasTyping = false;
-                if (string.Join(",", party.Keys) != "" && !this.Plugin.Client.IsDisposed) Plugin.Client.SendStoppedTyping(string.Join(",", party.Keys));
-            }
         }
 
         DrawPartyTypingStatus(party);
