@@ -17,8 +17,8 @@ namespace rtyping
             this.Plugin = plugin;
             this.Plugin.ContextMenu.OnOpenGameObjectContextMenu += this.ContextMenu_OnOpenGameObjectContextMenu;
 
-            this.addTrustedItem = new GameObjectContextMenuItem("Add RTyping Trusted", this.AddTrusted);
-            this.removeTrustedItem = new GameObjectContextMenuItem("Remove RTyping Trusted", this.RemoveTrusted);
+            this.addTrustedItem = new GameObjectContextMenuItem("Add RTyping Trusted", this.AddTrusted, true);
+            this.removeTrustedItem = new GameObjectContextMenuItem("Remove RTyping Trusted", this.RemoveTrusted, true);
         }
 
         private void RemoveTrusted(GameObjectContextMenuItemSelectedArgs args)
