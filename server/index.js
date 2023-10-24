@@ -1,123 +1,59 @@
 require('dotenv').config()
-const WebSocket = require('ws');
-const {
-    createServer
-} = require('https');
 const {
     readFileSync
-} = require('fs');
+} = require("fs");
+const {
+    createServer
+} = require("https");
+const {
+    Server
+} = require("socket.io");
 
 const server = createServer({
-    cert: readFileSync(process.env.CERT),
-    key: readFileSync(process.env.KEY)
+    cert: readFileSync(process.env.CLOUDFLARECERT),
+    key: readFileSync(process.env.CLOUDFLAREKEY)
 });
 
-const wss = new WebSocket.Server({
-    server
+const io = new Server(server, {});
+
+io.on("connection", (socket) => {
+    console.log(`Socket ${socket.id} connected.`)
+    if (socket.handshake.query.version != process.env.WSVER || !socket.handshake.query.ContentID) {
+        socket.emit("mismatch");
+        socket.disconnect();
+        console.log(`Socket ${socket.id} disconnected. Using an old version or lacking ContentID.`);
+        return;
+    }
+
+    socket.party = [];
+    socket.ContentID = socket.handshake.query.ContentID;
+
+    console.log(`Socket ${socket.id} identified as ContentID ${socket.ContentID}`);
+    socket.join(socket.ContentID);
+
+    socket.on("startTyping", (service, party) => {
+        party.splice(8, Infinity);
+        socket.party = party;
+        socket.to(party).emit("startTyping", service, socket.ContentID);
+    });
+
+    socket.on("stopTyping", (service, party) => {
+        party.splice(8, Infinity);
+        socket.party = party;
+        socket.to(party).emit("stopTyping", service, socket.ContentID);
+    });
+
+    socket.on("disconnecting", (reason) => {
+        if (socket.party.length < 1) return;
+        socket.to(socket.party).emit("stopTyping", "all", socket.ContentID);
+    });
+
+    socket.on("disconnect", (reason) => {
+        console.log(`Socket ${socket.id} disconnected. Reason: ${reason}.`);
+        console.log(`Total connected clients: ${io.engine.clientsCount}`);
+    });
+
 });
 
-const users = new Map();
-const wsVer = process.env.WSVER;
-
-const commands = {
-    IDENTIFY: 0,
-    TYPING: 1,
-    NOTYPING: 2,
-    VERSION: 3,
-    FAILED: 4
-}
-
-function PartyBroadcast(ws, command, content) {
-    if (ws.party == null) return;
-    ws.party.forEach(identity => {
-        if (identity == ws.identity) return;
-        if (!users.has(identity)) return;
-        const member = users.get(identity);
-        member.send(JSON.stringify({
-            Command: command,
-            Content: content
-        }));
-    });
-}
-
-wss.on("connection", (ws) => {
-    ws.isAlive = true;
-    ws.on("pong", () => {
-        ws.isAlive = true;
-    });
-
-    ws.send(JSON.stringify({
-        Command: commands.VERSION
-    }));
-
-    ws.verify = setTimeout(() => {
-        if (ws.identity != null) return;
-        ws.send(JSON.stringify({
-            Command: commands.FAILED
-        }));
-        return ws.terminate();
-    }, 30000)
-
-    ws.on("message", (data) => {
-        var message = JSON.parse(data);
-        var party = [];
-        switch (message.Command) {
-            default:
-                return console.log(`Unhandled command: ${message.Command}`);
-            case commands.IDENTIFY:
-                ws.identity = message.Content;
-                users.set(message.Content, ws);
-                break;
-            case commands.TYPING:
-                party = message.Content.split(",");
-                party.splice(8, Infinity);
-                ws.party = party;
-                PartyBroadcast(ws, commands.TYPING, ws.identity);
-                break;
-            case commands.NOTYPING:
-                party = message.Content.split(",");
-                party.splice(8, Infinity);
-                ws.party = party;
-                PartyBroadcast(ws, commands.NOTYPING, ws.identity);
-                break;
-            case commands.VERSION:
-                clearTimeout(ws.verify);
-                if (message.Content != wsVer) {
-                    ws.send(JSON.stringify({
-                        Command: commands.FAILED
-                    }));
-                    return ws.terminate();
-                }
-                return ws.send(JSON.stringify({
-                    Command: commands.IDENTIFY
-                }));
-        }
-    });
-
-    ws.on("close", () => {
-        if (ws.identity != null) {
-            PartyBroadcast(ws, commands.NOTYPING, ws.identity);
-            if (users.has(ws.identity)) users.delete(ws.identity);
-        } else {}
-    });
-})
-
-const checkAlive = setInterval(() => {
-    wss.clients.forEach((ws) => {
-        if (!ws.isAlive) {
-            if (ws.identity != null) {
-                PartyBroadcast(ws, commands.NOTYPING, ws.identity);
-                if (users.has(ws.identity)) users.delete(ws.identity);
-            }
-            return ws.terminate();
-        }
-        ws.isAlive = false;
-        ws.ping();
-    });
-}, 30000);
-
-wss.on("close", () => {
-    clearInterval(checkAlive);
-})
-
-server.listen(8443);
+server.listen(process.env.PORT);
+console.log(`RTyping Server started on port ${process.env.PORT}.`);

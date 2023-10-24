@@ -9,7 +9,7 @@
   "author": "apetih",
   "license": "ISC",
   "dependencies": {
-    "dotenv": "^16.0.3",
-    "ws": "^8.11.0"
+    "dotenv": "^16.3.1",
+    "socket.io": "^4.7.2"
   }
 }
