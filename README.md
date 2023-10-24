@@ -5,7 +5,7 @@ Very rough (like always) dalamud plugin for displaying the chat typing status of
 Shows an icon next to the player's job icon in the party list, and next to their nameplate if nearby.
 
 ## Limitations
-This plugin will only work with party members who are also using the plugin. It also does not work with chat-replacing plugins, as far as I am aware.
+This plugin will only work with party members who are also using the plugin. It also does not work with chat-replacing plugins, unless added via IPC.
 
 The partylist marker will not show up for alliances.
 
