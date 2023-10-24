@@ -12,6 +12,7 @@ namespace rtyping
 
         public bool ShownConsentMenu { get; set; } = false;
         public List<string> TrustedCharacters { get; set; } = new List<string>();
+        public bool HideKofi { get; set; } = false;
         public bool DisplaySelfMarker { get; set; } = true;
         public float PartyMarkerOpacity { get; set; } = 1.0f;
         public bool DisplaySelfNamePlateMarker { get; set; } = false;
