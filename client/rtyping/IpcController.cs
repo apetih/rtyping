@@ -111,6 +111,8 @@ namespace rtyping
 
         public void SendOnTypingReceive(string Service, string HashedContentID, bool isTyping)
         {
+            var party = Plugin.PartyManager.BuildTrustedPartyDictionary();
+            if (!party.ContainsKey(HashedContentID)) return;
             onTypingReceive.SendMessage(Service, HashedContentID, isTyping);
         }
 
