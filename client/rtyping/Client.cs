@@ -59,14 +59,13 @@ namespace rtyping
             Connect();
         }
 
-        private async void Logout()
+        private void Logout()
         {
             if (!wsClient.Connected) return;
-            await wsClient.DisconnectAsync();
-            Plugin.TypingManager.TypingList.Clear();
+            Disconnect();
         }
 
-        private async void Connect()
+        internal async void Connect()
         {
             wsClient.Options.Query = new List<KeyValuePair<string, string>>
                 {
@@ -80,6 +79,12 @@ namespace rtyping
             {
                 Plugin.Log.Error("Unable to connect to RTyping server.");
             }
+        }
+        internal async void Disconnect()
+        {
+            if (!wsClient.Connected) return;
+            await wsClient.DisconnectAsync();
+            Plugin.TypingManager.TypingList.Clear();
         }
 
         public async void EmitStartTyping(string Service, List<string> Party)
