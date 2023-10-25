@@ -39,7 +39,21 @@ public class ConfigWindow : Window, IDisposable
                 Process.Start(new ProcessStartInfo { FileName = "https://ko-fi.com/apetih", UseShellExecute = true });
             if (ImGui.IsItemHovered())
                 ImGui.SetTooltip("Support me on Ko-Fi");
+
+            ImGui.SameLine();
         }
+
+        if (!Plugin.ClientState.IsLoggedIn || Plugin.Client.Status == Client.State.Mismatch || Plugin.Client.Status == Client.State.Reconnecting) ImGui.BeginDisabled();
+
+        if (ImGuiComponents.IconButton(FontAwesomeIcon.PowerOff))
+        {
+            if (Plugin.Client.Status == Client.State.Connected)
+                Plugin.Client.Disconnect();
+            else
+                Plugin.Client.Connect();
+        }
+
+        if (!Plugin.ClientState.IsLoggedIn || Plugin.Client.Status == Client.State.Mismatch || Plugin.Client.Status == Client.State.Reconnecting) ImGui.EndDisabled();
 
         ImGui.SameLine();
 
@@ -52,7 +66,7 @@ public class ConfigWindow : Window, IDisposable
                 break;
 
             case Client.State.Error:
-                ImGui.TextColored(new Vector4(1.0f, 0.0f, 0.0f, 1.0f), "Error. Reload plugin.");
+                ImGui.TextColored(new Vector4(1.0f, 0.0f, 0.0f, 1.0f), "Error.");
                 break;
 
             case Client.State.Reconnecting:
