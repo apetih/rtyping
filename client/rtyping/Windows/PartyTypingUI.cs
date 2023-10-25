@@ -44,6 +44,7 @@ public class PartyTypingUI : Window, IDisposable
 
         if (partyList == null) return;
         if (!partyList->IsVisible) return;
+        if (partyList->VisibilityFlags == 1) return;
 
         var memberNode = partyList->UldManager.NodeListCount > memberNodeIndex ? (AtkComponentNode*)partyList->UldManager.NodeList[memberNodeIndex] : (AtkComponentNode*)IntPtr.Zero;
 
