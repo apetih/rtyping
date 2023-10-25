@@ -45,7 +45,7 @@ public class ConfigWindow : Window, IDisposable
 
         if (!Plugin.ClientState.IsLoggedIn || Plugin.Client.Status == Client.State.Mismatch || Plugin.Client.Status == Client.State.Reconnecting) ImGui.BeginDisabled();
 
-        if (ImGuiComponents.IconButton(FontAwesomeIcon.PowerOff))
+        if (ImGuiComponents.IconButton(FontAwesomeIcon.PowerOff, Plugin.Client.Status == Client.State.Connected ? new Vector4(1.0f, 0.13f, 0.13f, 1.0f) : new Vector4(0.13f, 0.8f, 0.13f, 1.0f)))
         {
             if (Plugin.Client.Status == Client.State.Connected)
                 Plugin.Client.Disconnect();
