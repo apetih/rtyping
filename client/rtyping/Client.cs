@@ -71,7 +71,8 @@ namespace rtyping
             try
             {
                 await wsClient.ConnectAsync();
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 Plugin.Log.Error("Unable to connect to RTyping server.");
             }
@@ -134,7 +135,13 @@ namespace rtyping
         private void WsClient_OnConnected(object? sender, EventArgs e)
         {
             Status = State.Connected;
-            if(Plugin.Configuration.ServerChat) Plugin.ChatGui.Print("Connection successful to RTyping Server.", "RTyping", 60);
+            if (Plugin.Configuration.ServerChat) Plugin.ChatGui.Print("Connection successful to RTyping Server.", "RTyping", 60);
+            if (Plugin.TypingManager.SelfTyping)
+            {
+                var partyList = Plugin.Configuration.TrustAnyone ? Plugin.PartyManager.BuildPartyDictionary().Keys.ToList<string>() : Plugin.PartyManager.BuildTrustedPartyDictionary().Keys.ToList<string>();
+                if (partyList.Count > 0)
+                    EmitStartTyping("rtyping", partyList);
+            }
         }
 
         private void WsClient_OnDisconnected(object? sender, string e)
