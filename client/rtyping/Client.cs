@@ -10,11 +10,7 @@ namespace rtyping
         private Plugin Plugin;
         private SocketIOClient.SocketIO wsClient = new("wss://rtyping.apetih.com:8443", new SocketIOClient.SocketIOOptions
         {
-            Transport = SocketIOClient.Transport.TransportProtocol.WebSocket,
-            ReconnectionAttempts = 3,
-            ReconnectionDelay = 2500,
-            ReconnectionDelayMax = 3000,
-            RandomizationFactor = 0.1,
+            Transport = SocketIOClient.Transport.TransportProtocol.WebSocket
         });
 
         private readonly string wsVer = "rewritesomewhat";
@@ -138,25 +134,27 @@ namespace rtyping
         private void WsClient_OnConnected(object? sender, EventArgs e)
         {
             Status = State.Connected;
-            Plugin.ChatGui.Print("Connection successful to RTyping Server.", "RTyping", 60);
+            if(Plugin.Configuration.ServerChat) Plugin.ChatGui.Print("Connection successful to RTyping Server.", "RTyping", 60);
         }
 
         private void WsClient_OnDisconnected(object? sender, string e)
         {
             if (Status != State.Mismatch) Status = State.Disconnected;
-            Plugin.ChatGui.PrintError("Disconnected from RTyping Server.", "RTyping", 16);
+            if (Plugin.Configuration.ServerChat) Plugin.ChatGui.PrintError("Disconnected from RTyping Server.", "RTyping", 16);
         }
 
         private void WsClient_OnReconnectAttempt(object? sender, int e)
         {
             Status = State.Reconnecting;
-            Plugin.ChatGui.Print("Attempting to reconnect.", "RTyping", 9);
+            //This would spam chat too much, only here in case I limit reconnection attempts.
+            //if (Plugin.Configuration.ServerChat) Plugin.ChatGui.Print("Attempting to reconnect.", "RTyping", 9);
         }
 
         private void WsClient_OnReconnectFailed(object? sender, EventArgs e)
         {
             Status = State.Error;
-            Plugin.ChatGui.PrintError("Failed to reconnect after three attempts. Please wait a bit before attempting to reconnect.", "RTyping", 16);
+            //Same as above.
+            //Plugin.ChatGui.PrintError("Failed to reconnect. Please wait a bit before attempting to reconnect.", "RTyping", 16);
         }
 
         public async void Dispose()
