@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace rtyping
 {
@@ -8,7 +9,7 @@ namespace rtyping
     {
 
         private Plugin Plugin;
-        private SocketIOClient.SocketIO wsClient = new("wss://rtyping.apetih.com:8443", new SocketIOClient.SocketIOOptions
+        private SocketIOClient.SocketIO wsClient = new("wss://rtyping.apetih.com:2096", new SocketIOClient.SocketIOOptions
         {
             Transport = SocketIOClient.Transport.TransportProtocol.WebSocket
         });
