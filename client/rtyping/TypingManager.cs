@@ -47,7 +47,7 @@ namespace rtyping
 
         private void PartyResend(IFramework framework)
         {
-            if (Plugin.ClientState.LocalPlayer == null) return;
+            if (!Plugin.ClientState.IsLoggedIn) return;
             if (!SelfTyping) return;
             var PartyCount = Plugin.PartyManager.GetPartyMemberCount();
             if (PartyCount != PreviousParty)
@@ -66,7 +66,7 @@ namespace rtyping
 
         private void DetectTyping(IFramework framework)
         {
-            if (Plugin.ClientState.LocalPlayer == null) return;
+            if (!Plugin.ClientState.IsLoggedIn) return;
             List<string> partyList;
 
             if (!IPCTyping && (!DetectCursor() || GetChatString() == ""))
