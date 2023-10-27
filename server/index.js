@@ -34,7 +34,7 @@ io.on("connection", (socket) => {
     socket.on("startTyping", (service, party) => {
         if(!party || !service) return;
         if(typeof service != "string") return;
-        if(Array.isArray(party)) return;
+        if(!Array.isArray(party)) return;
         party.splice(8, Infinity);
         socket.party = party;
         socket.to(party).emit("startTyping", service, socket.ContentID);
@@ -43,7 +43,7 @@ io.on("connection", (socket) => {
     socket.on("stopTyping", (service, party) => {
         if(!party || !service) return;
         if(typeof service != "string") return;
-        if(Array.isArray(party)) return;
+        if(!Array.isArray(party)) return;
         party.splice(8, Infinity);
         socket.party = party;
         socket.to(party).emit("stopTyping", service, socket.ContentID);
