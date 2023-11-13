@@ -9,12 +9,12 @@ namespace rtyping
     {
 
         private Plugin Plugin;
-        private SocketIOClient.SocketIO wsClient = new("wss://rtyping.apetih.com:2096", new SocketIOClient.SocketIOOptions
+        private SocketIOClient.SocketIO wsClient = new("wss://rtyping.apetih.dev:8443", new SocketIOClient.SocketIOOptions
         {
             Transport = SocketIOClient.Transport.TransportProtocol.WebSocket
         });
 
-        private readonly string wsVer = "rewritesomewhat";
+        private readonly string wsVer = "newdomain";
 
         internal enum State
         {
