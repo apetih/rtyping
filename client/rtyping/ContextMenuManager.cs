@@ -1,5 +1,4 @@
-using Dalamud.ContextMenu;
-using Dalamud.Game.Text;
+using Dalamud.Game.Gui.ContextMenu;
 using System;
 
 namespace rtyping
@@ -7,66 +6,68 @@ namespace rtyping
     public class ContextMenuManager : IDisposable
     {
         private Plugin Plugin;
-        private readonly GameObjectContextMenuItem addTrustedItem;
-        private readonly GameObjectContextMenuItem removeTrustedItem;
-
-        private string SelectedPlayer;
 
         public ContextMenuManager(Plugin plugin)
         {
             this.Plugin = plugin;
-            this.Plugin.ContextMenu.OnOpenGameObjectContextMenu += this.ContextMenu_OnOpenGameObjectContextMenu;
-
-            this.addTrustedItem = new GameObjectContextMenuItem("Add RTyping Trusted", this.AddTrusted, true);
-            this.removeTrustedItem = new GameObjectContextMenuItem("Remove RTyping Trusted", this.RemoveTrusted, true);
+            Plugin.ContextMenu.OnMenuOpened += ContextMenu_OnOpenGameObjectContextMenu;
         }
 
-        private void RemoveTrusted(GameObjectContextMenuItemSelectedArgs args)
+        private void RemoveTrusted(MenuItemClickedArgs args)
         {
             var trustedList = this.Plugin.Configuration.TrustedCharacters;
-            if (!trustedList.Contains(this.SelectedPlayer)) return;
-            this.Plugin.Configuration.TrustedCharacters.Remove(this.SelectedPlayer);
+            var SelectedPlayer = $"{((MenuTargetDefault)args.Target).TargetName}@{((MenuTargetDefault)args.Target).TargetHomeWorld.Id}";
+            if (!trustedList.Contains(SelectedPlayer)) return;
+            this.Plugin.Configuration.TrustedCharacters.Remove(SelectedPlayer);
             this.Plugin.Configuration.TrustedCharacters = trustedList;
             this.Plugin.Configuration.Save();
 
-            Plugin.ChatGui.Print(new XivChatEntry
-            {
-                Message = $"[RTyping] {SelectedPlayer.Split("@")[0]} has been removed as a trusted character.",
-                Type = XivChatType.SystemMessage,
-            });
+            Plugin.ChatGui.Print($"{((MenuTargetDefault)args.Target).TargetName} has been removed as a trusted character.", "RTyping", 576);
         }
 
-        private void AddTrusted(GameObjectContextMenuItemSelectedArgs args)
+        private void AddTrusted(MenuItemClickedArgs args)
         {
             var trustedList = this.Plugin.Configuration.TrustedCharacters;
-            if (trustedList.Contains(this.SelectedPlayer)) return;
-            this.Plugin.Configuration.TrustedCharacters.Add(this.SelectedPlayer);
+            var SelectedPlayer = $"{((MenuTargetDefault)args.Target).TargetName}@{((MenuTargetDefault)args.Target).TargetHomeWorld.Id}";
+            if (trustedList.Contains(SelectedPlayer)) return;
+            this.Plugin.Configuration.TrustedCharacters.Add(SelectedPlayer);
             this.Plugin.Configuration.TrustedCharacters = trustedList;
             this.Plugin.Configuration.Save();
 
-            Plugin.ChatGui.Print(new XivChatEntry
-            {
-                Message = $"[RTyping] {SelectedPlayer.Split("@")[0]} has been added as a trusted character.",
-                Type = XivChatType.SystemMessage,
-            });
+            Plugin.ChatGui.Print($"{((MenuTargetDefault)args.Target).TargetName} has been added as a trusted character.", "RTyping", 576);
         }
 
-        private void ContextMenu_OnOpenGameObjectContextMenu(GameObjectContextMenuOpenArgs args)
+        private void ContextMenu_OnOpenGameObjectContextMenu(MenuOpenedArgs args)
         {
             if (!IsValidAddon(args)) return;
             if (this.Plugin.Configuration.TrustAnyone) return;
+
             var trustedList = this.Plugin.Configuration.TrustedCharacters;
-            this.SelectedPlayer = $"{args.Text}@{args.ObjectWorld}";
-            if (this.SelectedPlayer == $"{Plugin.ClientState.LocalPlayer!.Name}@{Plugin.ClientState.LocalPlayer!.HomeWorld.Id}") return;
-            if (trustedList.Contains(this.SelectedPlayer))
-                args.AddCustomItem(this.removeTrustedItem);
+
+            var SelectedPlayer = $"{((MenuTargetDefault)args.Target).TargetName}@{((MenuTargetDefault)args.Target).TargetHomeWorld.Id}";
+            if (SelectedPlayer == $"{Plugin.ClientState.LocalPlayer!.Name}@{Plugin.ClientState.LocalPlayer!.HomeWorld.Id}") return;
+
+            if (trustedList.Contains(SelectedPlayer))
+                args.AddMenuItem(new()
+                {
+                    PrefixChar = 'R',
+                    PrefixColor = 576,
+                    Name = "Remove RTyping Trusted",
+                    OnClicked = this.RemoveTrusted
+                });
             else
-                args.AddCustomItem(this.addTrustedItem);
+                args.AddMenuItem(new()
+                {
+                    PrefixChar = 'R',
+                    PrefixColor = 576,
+                    Name = "Add RTyping Trusted",
+                    OnClicked = this.AddTrusted
+                });
         }
 
-        private static bool IsValidAddon(BaseContextMenuArgs args)
+        private static bool IsValidAddon(MenuOpenedArgs args)
         {
-            switch (args.ParentAddonName)
+            switch (args.AddonName)
             {
                 default:
                     return false;
@@ -84,13 +85,12 @@ namespace rtyping
                 case "CrossWorldLinkshell":
                 case "ContentMemberList":
                 case "BlackList":
-                    return args.Text != null && args.ObjectWorld != 0 && args.ObjectWorld != 65535;
+                    return ((MenuTargetDefault)args.Target).TargetHomeWorld.Id != 0 && ((MenuTargetDefault)args.Target).TargetHomeWorld.Id != 65535;
             }
         }
 
         public void Dispose()
         {
-            this.Plugin.ContextMenu.OnOpenGameObjectContextMenu -= this.ContextMenu_OnOpenGameObjectContextMenu;
         }
     }
 }

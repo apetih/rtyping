@@ -3,7 +3,6 @@ using Dalamud.Plugin;
 using Dalamud.Interface.Windowing;
 using rtyping.Windows;
 using Dalamud.Game.Command;
-using Dalamud.ContextMenu;
 using System.Security.Cryptography;
 using System.Text;
 using Dalamud.Plugin.Services;
@@ -26,9 +25,10 @@ namespace rtyping
         [PluginService] public static IFramework Framework { get; private set; } = null!;
         [PluginService] public static IChatGui ChatGui { get; private set; } = null!;
         [PluginService] public static IPluginLog Log { get; private set; } = null!;
+        [PluginService] public static IContextMenu ContextMenu { get; private set; } = null!;
 
         public Configuration Configuration { get; init; }
-        public DalamudContextMenu ContextMenu { get; init; }
+        //public DalamudContextMenu ContextMenu { get; init; }
 
         public Client Client { get; init; }
         public TypingManager TypingManager { get; init; }
@@ -47,8 +47,6 @@ namespace rtyping
 
         public Plugin()
         {
-            this.ContextMenu = new DalamudContextMenu(PluginInterface);
-
             TypingTexture = TextureProvider.GetTextureFromGame("ui/uld/charamake_dataimport.tex")!;
             TypingNameplateTexture = TextureProvider.GetIcon(61397)!;
 
@@ -95,7 +93,6 @@ namespace rtyping
             IPCController.Dispose();
             this.Client.Dispose();
             this.ContextMenuManager.Dispose();
-            ContextMenu.Dispose();
             TypingManager.Dispose();
             CommandManager.RemoveHandler(CommandName);
         }
