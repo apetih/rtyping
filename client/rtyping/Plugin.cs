@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Dalamud.Plugin.Services;
 using Dalamud.Interface.Internal;
+using Dalamud.Interface.Textures;
 
 namespace rtyping
 {
@@ -15,7 +16,7 @@ namespace rtyping
         public string Name => "RTyping";
         private const string CommandName = "/rtyping";
 
-        [PluginService] public static DalamudPluginInterface PluginInterface { get; private set; } = null!;
+        [PluginService] public static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
         [PluginService] public static ICommandManager CommandManager { get; private set; } = null!;
         [PluginService] public static IGameGui GameGui { get; private set; } = null!;
         [PluginService] public static IDataManager DataManager { get; private set; } = null!;
@@ -36,8 +37,6 @@ namespace rtyping
         public ContextMenuManager ContextMenuManager { get; init; }
         public WindowSystem WindowSystem = new("rtyping");
         public IpcController IPCController;
-        public IDalamudTextureWrap TypingTexture;
-        public IDalamudTextureWrap TypingNameplateTexture;
 
         public PartyTypingUI PartyTypingUI;
         public ConfigWindow ConfigWindow;
@@ -47,8 +46,6 @@ namespace rtyping
 
         public Plugin()
         {
-            TypingTexture = TextureProvider.GetTextureFromGame("ui/uld/charamake_dataimport.tex")!;
-            TypingNameplateTexture = TextureProvider.GetIcon(61397)!;
 
             Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
             Configuration.Initialize(PluginInterface);

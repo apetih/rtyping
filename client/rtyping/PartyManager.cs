@@ -62,7 +62,7 @@ namespace rtyping
             var manager = (GroupManager*)Plugin.PartyList.GroupManagerAddress;
             if (manager != null)
             {
-                if (manager->MemberCount != 0) return manager->MemberCount;
+                if (manager->MainGroup.MemberCount != 0) return manager->MainGroup.MemberCount;
             }
             if (InfoProxyCrossRealm.GetPartyMemberCount() != 0) return InfoProxyCrossRealm.GetPartyMemberCount();
             return 0;
@@ -79,11 +79,11 @@ namespace rtyping
             var manager = (GroupManager*)Plugin.PartyList.GroupManagerAddress;
             if (GetPartyType() == "Party")
             {
-                var partyMember = manager->GetPartyMemberByIndex(i);
-                return new Member((ulong)partyMember->ContentID, partyMember->ObjectID, MemoryHelper.ReadSeStringNullTerminated((nint)partyMember->Name), partyMember->HomeWorld, GetMemberPosition((ulong)partyMember->ContentID));
+                var partyMember = manager->MainGroup.GetPartyMemberByIndex(i);
+                return new Member((ulong)partyMember->ContentId, partyMember->EntityId, partyMember->NameString, partyMember->HomeWorld, GetMemberPosition((ulong)partyMember->ContentId));
             }
             var crossMember = InfoProxyCrossRealm.GetGroupMember((uint)i);
-            return new Member(crossMember->ContentId, crossMember->ObjectId, MemoryHelper.ReadSeStringNullTerminated((nint)crossMember->Name), (ushort)crossMember->HomeWorld, crossMember->MemberIndex);
+            return new Member(crossMember->ContentId, crossMember->EntityId, crossMember->NameString, (ushort)crossMember->HomeWorld, crossMember->MemberIndex);
         }
 
         public unsafe int GetMemberPosition(ulong cid)
@@ -92,7 +92,7 @@ namespace rtyping
             if (GetPartyType() == "Party")
             {
                 var agentHud = Framework.Instance()->UIModule->GetAgentModule()->GetAgentHUD();
-                var list = (HudPartyMember*)agentHud->PartyMemberList;
+                var list = agentHud->PartyMembers;
                 var pos = -1;
                 for (var i = 0; i < (short)agentHud->PartyMemberCount; i++)
                 {

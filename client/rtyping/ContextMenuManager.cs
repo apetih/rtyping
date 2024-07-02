@@ -13,7 +13,7 @@ namespace rtyping
             Plugin.ContextMenu.OnMenuOpened += ContextMenu_OnOpenGameObjectContextMenu;
         }
 
-        private void RemoveTrusted(MenuItemClickedArgs args)
+        private void RemoveTrusted(IMenuItemClickedArgs args)
         {
             var trustedList = this.Plugin.Configuration.TrustedCharacters;
             var SelectedPlayer = $"{((MenuTargetDefault)args.Target).TargetName}@{((MenuTargetDefault)args.Target).TargetHomeWorld.Id}";
@@ -25,7 +25,7 @@ namespace rtyping
             Plugin.ChatGui.Print($"{((MenuTargetDefault)args.Target).TargetName} has been removed as a trusted character.", "RTyping", 576);
         }
 
-        private void AddTrusted(MenuItemClickedArgs args)
+        private void AddTrusted(IMenuItemClickedArgs args)
         {
             var trustedList = this.Plugin.Configuration.TrustedCharacters;
             var SelectedPlayer = $"{((MenuTargetDefault)args.Target).TargetName}@{((MenuTargetDefault)args.Target).TargetHomeWorld.Id}";
@@ -37,7 +37,7 @@ namespace rtyping
             Plugin.ChatGui.Print($"{((MenuTargetDefault)args.Target).TargetName} has been added as a trusted character.", "RTyping", 576);
         }
 
-        private void ContextMenu_OnOpenGameObjectContextMenu(MenuOpenedArgs args)
+        private void ContextMenu_OnOpenGameObjectContextMenu(IMenuOpenedArgs args)
         {
             if (!IsValidAddon(args)) return;
             if (this.Plugin.Configuration.TrustAnyone) return;
@@ -65,7 +65,7 @@ namespace rtyping
                 });
         }
 
-        private static bool IsValidAddon(MenuOpenedArgs args)
+        private static bool IsValidAddon(IMenuOpenedArgs args)
         {
             switch (args.AddonName)
             {

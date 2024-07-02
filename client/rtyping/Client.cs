@@ -14,7 +14,7 @@ namespace rtyping
             Transport = SocketIOClient.Transport.TransportProtocol.WebSocket
         });
 
-        private readonly string wsVer = "newdomain";
+        private readonly string wsVer = "apix";
 
         internal enum State
         {

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Authors>apetih</Authors>
     <Company></Company>
-    <Version>0.1.0.2</Version>
+    <Version>0.1.0.3</Version>
     <Description>Allows other people using this plugin to see your typing status when in the same party.</Description>
     <Copyright></Copyright>
     <PackageProjectUrl>https://github.com/apetih/rtyping</PackageProjectUrl>
@@ -30,7 +30,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DalamudPackager" Version="2.1.12" />
+    <PackageReference Include="DalamudPackager" Version="2.1.13" />
     <PackageReference Include="SocketIOClient" Version="3.1.1" />
     <Reference Include="FFXIVClientStructs">
       <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>

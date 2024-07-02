@@ -51,7 +51,7 @@ public class PartyTypingUI : Window, IDisposable
         var partyAlign = partyList->UldManager.NodeList[3]->Y;
 
         if ((IntPtr)memberNode == IntPtr.Zero) return;
-        if (!memberNode->AtkResNode.IsVisible) return;
+        if (!memberNode->AtkResNode.IsVisible()) return;
 
         var iconNode = memberNode->Component->UldManager.NodeListCount > 4 ? memberNode->Component->UldManager.NodeList[4] : (AtkResNode*)IntPtr.Zero;
 
@@ -64,15 +64,15 @@ public class PartyTypingUI : Window, IDisposable
             partyList->Y + partyAlign + (memberNode->AtkResNode.Y * partyList->Scale) + (iconNode->Y * partyList->Scale) + (iconNode->Height * partyList->Scale / 2));
         iconPos += iconOffset;
 
-        ImGui.GetWindowDrawList().AddImage(Plugin.TypingTexture.ImGuiHandle, iconPos, iconPos + iconSize, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(new Vector4(1.0f, 1.0f, 1.0f, Plugin.Configuration.PartyMarkerOpacity)));
+        ImGui.GetWindowDrawList().AddImage(Plugin.TextureProvider.GetFromGame("ui/uld/charamake_dataimport.tex").GetWrapOrEmpty().ImGuiHandle, iconPos, iconPos + iconSize, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(new Vector4(1.0f, 1.0f, 1.0f, Plugin.Configuration.PartyMarkerOpacity)));
     }
 
     private unsafe void DrawPartyMemberNameplateTyping(IDictionary<string, Member> party, string cid)
     {
-        var ui3DModule = Framework.Instance()->GetUiModule()->GetUI3DModule();
+        var ui3DModule = Framework.Instance()->GetUIModule()->GetUI3DModule();
         uint oid;
 
-        if (cid == Plugin.HashContentID(Plugin.ClientState.LocalContentId) && Plugin.ClientState.LocalPlayer != null) oid = Plugin.ClientState.LocalPlayer.ObjectId;
+        if (cid == Plugin.HashContentID(Plugin.ClientState.LocalContentId) && Plugin.ClientState.LocalPlayer != null) oid = Plugin.ClientState.LocalPlayer.EntityId;
         else
         {
             if (!party.ContainsKey(cid)) return;
@@ -84,13 +84,13 @@ public class PartyTypingUI : Window, IDisposable
 
         for (var i = 0; i < ui3DModule->NamePlateObjectInfoCount; i++)
         {
-            var objectInfo = ((UI3DModule.ObjectInfo**)ui3DModule->NamePlateObjectInfoPointerArray)[i];
-            if (objectInfo->GameObject->ObjectID == oid)
+            var objectInfo = (ui3DModule->NamePlateObjectInfoPointers)[i];
+            if (objectInfo.Value->GameObject->EntityId == oid)
             {
-                if (objectInfo->GameObject->YalmDistanceFromPlayerX > 35) break;
-                distance = objectInfo->GameObject->YalmDistanceFromPlayerX;
+                if (objectInfo.Value->GameObject->YalmDistanceFromPlayerX > 35) break;
+                distance = objectInfo.Value->GameObject->YalmDistanceFromPlayerX;
                 var addonNamePlate = (AddonNamePlate*)Plugin.GameGui.GetAddonByName("NamePlate", 1);
-                npObj = &addonNamePlate->NamePlateObjectArray[objectInfo->NamePlateIndex];
+                npObj = &addonNamePlate->NamePlateObjectArray[objectInfo.Value->NamePlateIndex];
                 break;
             }
         }
@@ -99,25 +99,25 @@ public class PartyTypingUI : Window, IDisposable
         {
             var iconNode = npObj->RootNode->Component->UldManager.NodeList[0];
 
-            if (!iconNode->IsVisible && Plugin.Configuration.ShowOnlyWhenNameplateVisible) return;
+            if (!iconNode->IsVisible() && Plugin.Configuration.ShowOnlyWhenNameplateVisible) return;
 
             var iconOffset = new Vector2(distance / 1.5f, distance / 3f);
             var iconSize = new Vector2(40.0f * npObj->RootNode->AtkResNode.ScaleX, 40.0f * npObj->RootNode->AtkResNode.ScaleY);
             var iconPos = new Vector2(npObj->RootNode->AtkResNode.X + iconNode->X + iconNode->Width, npObj->RootNode->AtkResNode.Y + iconNode->Y);
             if (iconNode->Height == 24) iconOffset.Y -= 8.0f;
 
-            if (Plugin.Configuration.NameplateMarkerStyle == 1 || (!iconNode->IsVisible && !Plugin.Configuration.ShowOnlyWhenNameplateVisible))
+            if (Plugin.Configuration.NameplateMarkerStyle == 1 || (!iconNode->IsVisible() && !Plugin.Configuration.ShowOnlyWhenNameplateVisible))
             {
                 iconOffset.Y = -16.0f + (distance / 1f);
                 iconSize = new Vector2((100.0f * npObj->RootNode->AtkResNode.ScaleX), (100.0f * npObj->RootNode->AtkResNode.ScaleY));
                 iconPos = new Vector2(npObj->RootNode->AtkResNode.X + iconNode->X + (iconNode->Width / 4), npObj->RootNode->AtkResNode.Y);
                 if (iconNode->Height == 24) iconOffset.Y += 16.0f;
-                if (!iconNode->IsVisible && !Plugin.Configuration.ShowOnlyWhenNameplateVisible) iconOffset.Y += 64.0f;
+                if (!iconNode->IsVisible() && !Plugin.Configuration.ShowOnlyWhenNameplateVisible) iconOffset.Y += 64.0f;
             }
 
             iconPos += iconOffset;
 
-            ImGui.GetWindowDrawList().AddImage(Plugin.TypingNameplateTexture.ImGuiHandle, iconPos, iconPos + iconSize, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(new Vector4(1.0f, 1.0f, 1.0f, Plugin.Configuration.NameplateMarkerOpacity)));
+            ImGui.GetWindowDrawList().AddImage(Plugin.TextureProvider.GetFromGameIcon(61397).GetWrapOrEmpty().ImGuiHandle, iconPos, iconPos + iconSize, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(new Vector4(1.0f, 1.0f, 1.0f, Plugin.Configuration.NameplateMarkerOpacity)));
 
         }
     }

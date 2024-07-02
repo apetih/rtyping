@@ -131,10 +131,10 @@ namespace rtyping
             if (chatlog == null) return false;
             if (!chatlog->IsVisible) return false;
 
-            var textInput = chatlog->UldManager.NodeList[15];
+            var textInput = chatlog->UldManager.NodeList[16];
             var chatCursor = textInput->GetAsAtkComponentNode()->Component->UldManager.NodeList[14];
 
-            if (!chatCursor->IsVisible) return false;
+            if (!chatCursor->IsVisible()) return false;
             return true;
         }
 
@@ -144,7 +144,7 @@ namespace rtyping
 
             if (chatlog == null) return "";
             if (!chatlog->IsVisible) return "";
-            var textInput = chatlog->UldManager.NodeList[15];
+            var textInput = chatlog->UldManager.NodeList[16];
             var chatInput = textInput->GetComponent()->UldManager.NodeList[1];
 
             var chatText = chatInput->GetAsAtkTextNode()->GetText();
