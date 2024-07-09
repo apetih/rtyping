@@ -97,20 +97,20 @@ public class PartyTypingUI : Window, IDisposable
 
         if (npObj != null)
         {
-            var iconNode = npObj->RootNode->Component->UldManager.NodeList[0];
+            var iconNode = npObj->RootComponentNode->Component->UldManager.NodeList[0];
 
             if (!iconNode->IsVisible() && Plugin.Configuration.ShowOnlyWhenNameplateVisible) return;
 
             var iconOffset = new Vector2(distance / 1.5f, distance / 3f);
-            var iconSize = new Vector2(40.0f * npObj->RootNode->AtkResNode.ScaleX, 40.0f * npObj->RootNode->AtkResNode.ScaleY);
-            var iconPos = new Vector2(npObj->RootNode->AtkResNode.X + iconNode->X + iconNode->Width, npObj->RootNode->AtkResNode.Y + iconNode->Y);
+            var iconSize = new Vector2(40.0f * npObj->RootComponentNode->AtkResNode.ScaleX, 40.0f * npObj->RootComponentNode->AtkResNode.ScaleY);
+            var iconPos = new Vector2(npObj->RootComponentNode->AtkResNode.X + iconNode->X + iconNode->Width, npObj->RootComponentNode->AtkResNode.Y + iconNode->Y);
             if (iconNode->Height == 24) iconOffset.Y -= 8.0f;
 
             if (Plugin.Configuration.NameplateMarkerStyle == 1 || (!iconNode->IsVisible() && !Plugin.Configuration.ShowOnlyWhenNameplateVisible))
             {
                 iconOffset.Y = -16.0f + (distance / 1f);
-                iconSize = new Vector2((100.0f * npObj->RootNode->AtkResNode.ScaleX), (100.0f * npObj->RootNode->AtkResNode.ScaleY));
-                iconPos = new Vector2(npObj->RootNode->AtkResNode.X + iconNode->X + (iconNode->Width / 4), npObj->RootNode->AtkResNode.Y);
+                iconSize = new Vector2((100.0f * npObj->RootComponentNode->AtkResNode.ScaleX), (100.0f * npObj->RootComponentNode->AtkResNode.ScaleY));
+                iconPos = new Vector2(npObj->RootComponentNode->AtkResNode.X + iconNode->X + (iconNode->Width / 4), npObj->RootComponentNode->AtkResNode.Y);
                 if (iconNode->Height == 24) iconOffset.Y += 16.0f;
                 if (!iconNode->IsVisible() && !Plugin.Configuration.ShowOnlyWhenNameplateVisible) iconOffset.Y += 64.0f;
             }
