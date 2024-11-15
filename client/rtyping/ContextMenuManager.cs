@@ -16,7 +16,7 @@ namespace rtyping
         private void RemoveTrusted(IMenuItemClickedArgs args)
         {
             var trustedList = this.Plugin.Configuration.TrustedCharacters;
-            var SelectedPlayer = $"{((MenuTargetDefault)args.Target).TargetName}@{((MenuTargetDefault)args.Target).TargetHomeWorld.Id}";
+            var SelectedPlayer = $"{((MenuTargetDefault)args.Target).TargetName}@{((MenuTargetDefault)args.Target).TargetHomeWorld.RowId}";
             if (!trustedList.Contains(SelectedPlayer)) return;
             this.Plugin.Configuration.TrustedCharacters.Remove(SelectedPlayer);
             this.Plugin.Configuration.TrustedCharacters = trustedList;
@@ -28,7 +28,7 @@ namespace rtyping
         private void AddTrusted(IMenuItemClickedArgs args)
         {
             var trustedList = this.Plugin.Configuration.TrustedCharacters;
-            var SelectedPlayer = $"{((MenuTargetDefault)args.Target).TargetName}@{((MenuTargetDefault)args.Target).TargetHomeWorld.Id}";
+            var SelectedPlayer = $"{((MenuTargetDefault)args.Target).TargetName}@{((MenuTargetDefault)args.Target).TargetHomeWorld.RowId}";
             if (trustedList.Contains(SelectedPlayer)) return;
             this.Plugin.Configuration.TrustedCharacters.Add(SelectedPlayer);
             this.Plugin.Configuration.TrustedCharacters = trustedList;
@@ -44,8 +44,8 @@ namespace rtyping
 
             var trustedList = this.Plugin.Configuration.TrustedCharacters;
 
-            var SelectedPlayer = $"{((MenuTargetDefault)args.Target).TargetName}@{((MenuTargetDefault)args.Target).TargetHomeWorld.Id}";
-            if (SelectedPlayer == $"{Plugin.ClientState.LocalPlayer!.Name}@{Plugin.ClientState.LocalPlayer!.HomeWorld.Id}") return;
+            var SelectedPlayer = $"{((MenuTargetDefault)args.Target).TargetName}@{((MenuTargetDefault)args.Target).TargetHomeWorld.RowId}";
+            if (SelectedPlayer == $"{Plugin.ClientState.LocalPlayer!.Name}@{Plugin.ClientState.LocalPlayer!.HomeWorld.RowId}") return;
 
             if (trustedList.Contains(SelectedPlayer))
                 args.AddMenuItem(new()
@@ -85,7 +85,7 @@ namespace rtyping
                 case "CrossWorldLinkshell":
                 case "ContentMemberList":
                 case "BlackList":
-                    return ((MenuTargetDefault)args.Target).TargetHomeWorld.Id != 0 && ((MenuTargetDefault)args.Target).TargetHomeWorld.Id != 65535;
+                    return ((MenuTargetDefault)args.Target).TargetHomeWorld.RowId != 0 && ((MenuTargetDefault)args.Target).TargetHomeWorld.RowId != 65535;
             }
         }
 

@@ -2,7 +2,7 @@ using System;
 using System.Numerics;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 
 namespace rtyping.Windows;
 
@@ -46,10 +46,8 @@ public class TrustedListWindow : Window, IDisposable
             {
                 var worldSheet = Plugin.DataManager.GetExcelSheet<World>();
                 var worldRow = worldSheet!.GetRow(uint.Parse(trustedList[i].Split("@")[1]));
-                var worldName = "Unknown";
+                var worldName = worldRow.Name.ExtractText();
                 var characterName = trustedList[i].Split("@")[0];
-                if (worldRow != null)
-                    worldName = worldRow.Name;
                 var displayName = $"{characterName}@{worldName}";
                 if (ImGui.Selectable(displayName, selected == i))
                 {

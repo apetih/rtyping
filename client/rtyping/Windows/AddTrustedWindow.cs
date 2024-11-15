@@ -3,7 +3,7 @@ using System.Numerics;
 using Dalamud.Game.Text;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 
 namespace rtyping.Windows;
 
@@ -49,7 +49,7 @@ public class AddTrustedWindow : Window, IDisposable
 
         foreach (var entry in partyList)
         {
-            if ($"{Plugin.ClientState.LocalPlayer.Name}@{Plugin.ClientState.LocalPlayer.HomeWorld.Id}" == $"{entry.Value.Name}@{entry.Value.World}") continue;
+            if ($"{Plugin.ClientState.LocalPlayer.Name}@{Plugin.ClientState.LocalPlayer.HomeWorld.RowId}" == $"{entry.Value.Name}@{entry.Value.World}") continue;
             var action = this.Configuration.TrustedCharacters.Contains($"{entry.Value.Name}@{entry.Value.World}") ? "Remove" : "Add";
             if (ImGui.Button($"{action}##{entry.Value.Name}@{entry.Value.World}"))
             {

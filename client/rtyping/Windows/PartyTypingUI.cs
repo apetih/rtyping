@@ -40,7 +40,7 @@ public class PartyTypingUI : Window, IDisposable
         if (memberIndex < 0 || memberIndex > 7) return;
 
         var partyList = (AtkUnitBase*)Plugin.GameGui.GetAddonByName("_PartyList", 1);
-        var memberNodeIndex = 22 - memberIndex;
+        var memberNodeIndex = 23 - memberIndex;
 
         if (partyList == null) return;
         if (!partyList->IsVisible) return;
@@ -49,7 +49,7 @@ public class PartyTypingUI : Window, IDisposable
         var memberNode = partyList->UldManager.NodeListCount > memberNodeIndex ? (AtkComponentNode*)partyList->UldManager.NodeList[memberNodeIndex] : (AtkComponentNode*)IntPtr.Zero;
 
         var partyAlign = partyList->UldManager.NodeList[3]->Y;
-
+        
         if ((IntPtr)memberNode == IntPtr.Zero) return;
         if (!memberNode->AtkResNode.IsVisible()) return;
 

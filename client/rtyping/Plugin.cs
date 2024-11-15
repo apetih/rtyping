@@ -6,8 +6,6 @@ using Dalamud.Game.Command;
 using System.Security.Cryptography;
 using System.Text;
 using Dalamud.Plugin.Services;
-using Dalamud.Interface.Internal;
-using Dalamud.Interface.Textures;
 
 namespace rtyping
 {

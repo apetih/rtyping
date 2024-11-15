@@ -14,7 +14,7 @@ namespace rtyping
             Transport = SocketIOClient.Transport.TransportProtocol.WebSocket
         });
 
-        private readonly string wsVer = "apix";
+        private readonly string wsVer = "api11";
 
         internal enum State
         {
@@ -56,7 +56,7 @@ namespace rtyping
             Connect();
         }
 
-        private void Logout()
+        private void Logout(int type, int code)
         {
             if (!wsClient.Connected) return;
             Disconnect();
@@ -130,7 +130,7 @@ namespace rtyping
         {
             Plugin.ChatGui.PrintError("Connection to RTyping Server denied. Plugin version does not match.", "RTyping", 16);
             Status = State.Mismatch;
-            Logout();
+            Logout(0, 0);
         }
 
         private void WsClient_OnConnected(object? sender, EventArgs e)

@@ -37,7 +37,7 @@ namespace rtyping
             }
         }
 
-        private void ClientState_Logout()
+        private void ClientState_Logout(int type, int code)
         {
             SelfTyping = false;
             ChatString = "";
