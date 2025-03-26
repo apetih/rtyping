@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Dalamud.Memory;
 using Dalamud.Plugin.Services;
+using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
 namespace rtyping
@@ -149,7 +150,7 @@ namespace rtyping
 
             var chatText = chatInput->GetAsAtkTextNode()->GetText();
 
-            return MemoryHelper.ReadSeStringNullTerminated((nint)chatText).ToString();
+            return chatText.AsDalamudSeString().ToString();
         }
 
         public void Dispose()

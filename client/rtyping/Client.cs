@@ -14,7 +14,7 @@ namespace rtyping
             Transport = SocketIOClient.Transport.TransportProtocol.WebSocket
         });
 
-        private readonly string wsVer = "api11";
+        private readonly string wsVer = "api12";
 
         internal enum State
         {
