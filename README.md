@@ -21,4 +21,4 @@ To install the plugin from the official Dalamud repo, enable `Get plugin testing
 Once added, look for RTyping in the Plugin Installer.
 
 ## Special Thanks
-* Wrex - For the plugin icon
+* Dandybadger - For the plugin icon
