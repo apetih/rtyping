@@ -1,6 +1,7 @@
 using Dalamud.Plugin.Ipc;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace rtyping
 {
@@ -71,10 +72,8 @@ namespace rtyping
 
         /**
          * Returns whether the specified Character is trusted.
-         * String is CharacterName@World
-         * World is uint
          * */
-        private ICallGateProvider<string, bool> isCharacterTrusted;
+        private ICallGateProvider<string, uint, bool> isCharacterTrusted;
 
         /**
          * Returns whether Trust Anyone setting is enabled.
@@ -93,7 +92,7 @@ namespace rtyping
             sendTypingByContentId = Plugin.PluginInterface.GetIpcProvider<string, ulong, bool, bool>("RTyping.Client.SendTyping.ContentId");
             onTypingReceive = Plugin.PluginInterface.GetIpcProvider<string, string, bool, bool>("RTyping.Client.GetTyping");
             isPartyMemberTrusted = Plugin.PluginInterface.GetIpcProvider<int, bool>("RTyping.Trusted.PartyMember");
-            isCharacterTrusted = Plugin.PluginInterface.GetIpcProvider<string, bool>("RTyping.Trusted.Character");
+            isCharacterTrusted = Plugin.PluginInterface.GetIpcProvider<string, uint, bool>("RTyping.Trusted.Character");
             isTrustAnyoneEnabled = Plugin.PluginInterface.GetIpcProvider<bool>("RTyping.Trusted.TrustAnyone");
             isConnected = Plugin.PluginInterface.GetIpcProvider<bool>("RTyping.Connected");
 
@@ -152,7 +151,7 @@ namespace rtyping
             if (service == "rtyping" || service == "all" || service == "") return false;
             if (Plugin.PartyManager.GetPartyMemberCount() <= index) return false;
             var partyMember = Plugin.PartyManager.GetMemberByIndex(index);
-            if (!Plugin.Configuration.TrustedCharacters.Contains($"{partyMember.Name}@{partyMember.World}") && !Plugin.Configuration.TrustAnyone) return false;
+            if (!Plugin.TrustedCharacterDb.TrustedCharacters.Any(c => c.CharacterName == partyMember.Name.TextValue && c.WorldId == partyMember.World) && !Plugin.Configuration.TrustAnyone) return false;
             if (isTyping) Plugin.Client.EmitStartTyping(service, new List<string>() { Plugin.HashContentID(partyMember.ContentID) });
             else Plugin.Client.EmitStopTyping(service, new List<string>() { Plugin.HashContentID(partyMember.ContentID) });
             return true;
@@ -164,14 +163,13 @@ namespace rtyping
             if (pos < 0) return false;
             return SendTypingByIndex(service, pos, isTyping);
         }
-
-        private bool IsCharacterTrusted(string character) => Plugin.Configuration.TrustedCharacters.Contains(character);
+        private bool IsCharacterTrusted(string characterName, uint worldId) => Plugin.TrustedCharacterDb.TrustedCharacters.Any(c => c.CharacterName == characterName && c.WorldId == worldId);
 
         private bool IsPartyMemberTrusted(int index)
         {
             if (Plugin.PartyManager.GetPartyMemberCount() <= index) return false;
             var partyMember = Plugin.PartyManager.GetMemberByIndex(index);
-            return IsCharacterTrusted($"{partyMember.Name}@{partyMember.World}");
+            return Plugin.TrustedCharacterDb.TrustedCharacters.Any(c => c.CharacterName == partyMember.Name.TextValue && c.WorldId == partyMember.World);
         }
 
         public void Dispose()

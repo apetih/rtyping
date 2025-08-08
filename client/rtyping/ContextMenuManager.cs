@@ -1,5 +1,7 @@
 using Dalamud.Game.Gui.ContextMenu;
+using rtyping.Models;
 using System;
+using System.Linq;
 
 namespace rtyping
 {
@@ -15,26 +17,55 @@ namespace rtyping
 
         private void RemoveTrusted(IMenuItemClickedArgs args)
         {
-            var trustedList = this.Plugin.Configuration.TrustedCharacters;
-            var SelectedPlayer = $"{((MenuTargetDefault)args.Target).TargetName}@{((MenuTargetDefault)args.Target).TargetHomeWorld.RowId}";
-            if (!trustedList.Contains(SelectedPlayer)) return;
-            this.Plugin.Configuration.TrustedCharacters.Remove(SelectedPlayer);
-            this.Plugin.Configuration.TrustedCharacters = trustedList;
-            this.Plugin.Configuration.Save();
+            var TargetPlayerName = ((MenuTargetDefault)args.Target).TargetName;
+            var TargetPlayerWorldId = ((MenuTargetDefault)args.Target).TargetHomeWorld.RowId;
+            if (!Plugin.TrustedCharacterDb.TrustedCharacters.Any(c => c.CharacterName == TargetPlayerName && c.WorldId == TargetPlayerWorldId)) return;
 
-            Plugin.ChatGui.Print($"{((MenuTargetDefault)args.Target).TargetName} has been removed as a trusted character.", "RTyping", 576);
+            var TargetCharacter = Plugin.TrustedCharacterDb.TrustedCharacters.First(c => c.CharacterName == TargetPlayerName && c.WorldId == TargetPlayerWorldId);
+
+            Plugin.TrustedCharacterDb.Remove(TargetCharacter);
+            Plugin.TrustedCharacterDb.SaveChanges();
+
+            //Plugin.ChatGui.Print($"{TargetPlayerName} has been removed as a trusted character.", "RTyping", 576);
+
+            Plugin.NotificationManager.AddNotification(new Dalamud.Interface.ImGuiNotification.Notification
+            {
+                Title = "Character Removed",
+                Content = $"{TargetPlayerName} has been removed as a trusted character.",
+                Minimized = false,
+                Type = Dalamud.Interface.ImGuiNotification.NotificationType.Success
+            });
         }
 
         private void AddTrusted(IMenuItemClickedArgs args)
         {
-            var trustedList = this.Plugin.Configuration.TrustedCharacters;
-            var SelectedPlayer = $"{((MenuTargetDefault)args.Target).TargetName}@{((MenuTargetDefault)args.Target).TargetHomeWorld.RowId}";
-            if (trustedList.Contains(SelectedPlayer)) return;
-            this.Plugin.Configuration.TrustedCharacters.Add(SelectedPlayer);
-            this.Plugin.Configuration.TrustedCharacters = trustedList;
-            this.Plugin.Configuration.Save();
+            var TargetPlayerName = ((MenuTargetDefault)args.Target).TargetName;
+            var TargetPlayerWorldId = ((MenuTargetDefault)args.Target).TargetHomeWorld.RowId;
+            if (Plugin.TrustedCharacterDb.TrustedCharacters.Any(c => c.CharacterName == TargetPlayerName && c.WorldId == TargetPlayerWorldId)) return;
 
-            Plugin.ChatGui.Print($"{((MenuTargetDefault)args.Target).TargetName} has been added as a trusted character.", "RTyping", 576);
+            Plugin.TrustedCharacterDb.Add(new TrustedCharacter
+            {
+                CharacterName = TargetPlayerName,
+                WorldId = TargetPlayerWorldId,
+                AddedAt = DateTime.Now,
+                DisplayNameplate = Plugin.Configuration.DefaultDisplayNameplate,
+                DisplayParty = Plugin.Configuration.DefaultDisplayParty,
+                NameplateStyle = Plugin.Configuration.DefaultNameplateStyle,
+                ReceivePartyless = Plugin.Configuration.DefaultReceivePartyless,
+                SendPartyless = Plugin.Configuration.DefaultSendPartyless,
+                SendTypingStatus = Plugin.Configuration.DefaultSendTypingStatus
+            });
+            Plugin.TrustedCharacterDb.SaveChanges();
+
+            //Plugin.ChatGui.Print($"{TargetPlayerName} has been added as a trusted character.", "RTyping", 576);
+
+            Plugin.NotificationManager.AddNotification(new Dalamud.Interface.ImGuiNotification.Notification
+            {
+                Title = "Character Added",
+                Content = $"{TargetPlayerName} has been added as a trusted character.",
+                Minimized = false,
+                Type = Dalamud.Interface.ImGuiNotification.NotificationType.Success
+            });
         }
 
         private void ContextMenu_OnOpenGameObjectContextMenu(IMenuOpenedArgs args)
@@ -42,12 +73,12 @@ namespace rtyping
             if (!IsValidAddon(args)) return;
             if (this.Plugin.Configuration.TrustAnyone) return;
 
-            var trustedList = this.Plugin.Configuration.TrustedCharacters;
+            var TargetPlayerName = ((MenuTargetDefault)args.Target).TargetName;
+            var TargetPlayerWorldId = ((MenuTargetDefault)args.Target).TargetHomeWorld.RowId;
 
-            var SelectedPlayer = $"{((MenuTargetDefault)args.Target).TargetName}@{((MenuTargetDefault)args.Target).TargetHomeWorld.RowId}";
-            if (SelectedPlayer == $"{Plugin.ClientState.LocalPlayer!.Name}@{Plugin.ClientState.LocalPlayer!.HomeWorld.RowId}") return;
+            if (TargetPlayerName == Plugin.ClientState.LocalPlayer!.Name.TextValue && TargetPlayerWorldId == Plugin.ClientState.LocalPlayer!.HomeWorld.RowId) return;
 
-            if (trustedList.Contains(SelectedPlayer))
+            if (Plugin.TrustedCharacterDb.TrustedCharacters.Any(c => c.CharacterName == TargetPlayerName && c.WorldId == TargetPlayerWorldId))
                 args.AddMenuItem(new()
                 {
                     PrefixChar = 'R',

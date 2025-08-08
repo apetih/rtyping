@@ -5,7 +5,8 @@ using Dalamud.Interface.Windowing;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
+using System.Linq;
 
 namespace rtyping.Windows;
 
@@ -39,7 +40,7 @@ public class PartyTypingUI : Window, IDisposable
     {
         if (memberIndex < 0 || memberIndex > 7) return;
 
-        var partyList = (AtkUnitBase*)Plugin.GameGui.GetAddonByName("_PartyList", 1);
+        var partyList = (AtkUnitBase*)Plugin.GameGui.GetAddonByName("_PartyList", 1).Address;
         var memberNodeIndex = 23 - memberIndex;
 
         if (partyList == null) return;
@@ -49,7 +50,7 @@ public class PartyTypingUI : Window, IDisposable
         var memberNode = partyList->UldManager.NodeListCount > memberNodeIndex ? (AtkComponentNode*)partyList->UldManager.NodeList[memberNodeIndex] : (AtkComponentNode*)IntPtr.Zero;
 
         var partyAlign = partyList->UldManager.NodeList[3]->Y;
-        
+
         if ((IntPtr)memberNode == IntPtr.Zero) return;
         if (!memberNode->AtkResNode.IsVisible()) return;
 
@@ -64,10 +65,10 @@ public class PartyTypingUI : Window, IDisposable
             partyList->Y + partyAlign + (memberNode->AtkResNode.Y * partyList->Scale) + (iconNode->Y * partyList->Scale) + (iconNode->Height * partyList->Scale / 2));
         iconPos += iconOffset;
 
-        ImGui.GetWindowDrawList().AddImage(Plugin.TextureProvider.GetFromGame("ui/uld/charamake_dataimport.tex").GetWrapOrEmpty().ImGuiHandle, iconPos, iconPos + iconSize, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(new Vector4(1.0f, 1.0f, 1.0f, Plugin.Configuration.PartyMarkerOpacity)));
+        ImGui.GetWindowDrawList().AddImage(Plugin.TextureProvider.GetFromGame("ui/uld/charamake_dataimport.tex").GetWrapOrEmpty().Handle, iconPos, iconPos + iconSize, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(new Vector4(1.0f, 1.0f, 1.0f, Plugin.Configuration.PartyMarkerOpacity)));
     }
 
-    private unsafe void DrawPartyMemberNameplateTyping(IDictionary<string, Member> party, string cid)
+    private unsafe void DrawPartyMemberNameplateTyping(IDictionary<string, Member> party, string cid, int style)
     {
         var ui3DModule = Framework.Instance()->GetUIModule()->GetUI3DModule();
         uint oid;
@@ -89,7 +90,7 @@ public class PartyTypingUI : Window, IDisposable
             {
                 if (objectInfo.Value->GameObject->YalmDistanceFromPlayerX > 35) break;
                 distance = objectInfo.Value->GameObject->YalmDistanceFromPlayerX;
-                var addonNamePlate = (AddonNamePlate*)Plugin.GameGui.GetAddonByName("NamePlate", 1);
+                var addonNamePlate = (AddonNamePlate*)Plugin.GameGui.GetAddonByName("NamePlate", 1).Address;
                 npObj = &addonNamePlate->NamePlateObjectArray[objectInfo.Value->NamePlateIndex];
                 break;
             }
@@ -106,7 +107,7 @@ public class PartyTypingUI : Window, IDisposable
             var iconPos = new Vector2(npObj->RootComponentNode->AtkResNode.X + iconNode->X + iconNode->Width, npObj->RootComponentNode->AtkResNode.Y + iconNode->Y);
             if (iconNode->Height == 24) iconOffset.Y -= 8.0f;
 
-            if (Plugin.Configuration.NameplateMarkerStyle == 1 || (!iconNode->IsVisible() && !Plugin.Configuration.ShowOnlyWhenNameplateVisible))
+            if (style == 1 || (!iconNode->IsVisible() && !Plugin.Configuration.ShowOnlyWhenNameplateVisible))
             {
                 iconOffset.Y = -16.0f + (distance / 1f);
                 iconSize = new Vector2((100.0f * npObj->RootComponentNode->AtkResNode.ScaleX), (100.0f * npObj->RootComponentNode->AtkResNode.ScaleY));
@@ -117,26 +118,29 @@ public class PartyTypingUI : Window, IDisposable
 
             iconPos += iconOffset;
 
-            ImGui.GetWindowDrawList().AddImage(Plugin.TextureProvider.GetFromGameIcon(61397).GetWrapOrEmpty().ImGuiHandle, iconPos, iconPos + iconSize, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(new Vector4(1.0f, 1.0f, 1.0f, Plugin.Configuration.NameplateMarkerOpacity)));
+            ImGui.GetWindowDrawList().AddImage(Plugin.TextureProvider.GetFromGameIcon(61397).GetWrapOrEmpty().Handle, iconPos, iconPos + iconSize, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(new Vector4(1.0f, 1.0f, 1.0f, Plugin.Configuration.NameplateMarkerOpacity)));
 
         }
     }
 
     private unsafe void DrawPartyTypingStatus(IDictionary<string, Member> party)
     {
-        var trustedList = Plugin.Configuration.TrustedCharacters;
         var trustAnyone = Plugin.Configuration.TrustAnyone;
 
         foreach (var cid in party.Keys)
         {
             var member = party[cid];
-            if (!trustedList.Contains($"{member.Name}@{member.World}") && !trustAnyone) continue;
+            if (!Plugin.TrustedCharacterDb.TrustedCharacters.Any(c => c.CharacterName == member.Name.TextValue && c.WorldId == member.World) && !trustAnyone) continue;
             if (Plugin.TypingManager.TypingList.ContainsKey(cid))
             {
-                DrawPartyMemberTyping(member.Position);
-                if (Plugin.Configuration.DisplayOthersNamePlateMarker)
-                    DrawPartyMemberNameplateTyping(party, cid);
-
+                if(!Plugin.TrustedCharacterDb.TrustedCharacters.Any(c => c.CharacterName == member.Name.TextValue && c.WorldId == member.World) && trustAnyone) {
+                    if (Plugin.Configuration.DefaultDisplayParty) DrawPartyMemberTyping(member.Position);
+                    if (Plugin.Configuration.DefaultDisplayNameplate) DrawPartyMemberNameplateTyping(party, cid, Plugin.Configuration.DefaultNameplateStyle);
+                    continue;
+                }
+                var TargetMember = Plugin.TrustedCharacterDb.TrustedCharacters.First(c => c.CharacterName == member.Name.TextValue && c.WorldId == member.World);
+                if (TargetMember.DisplayParty) DrawPartyMemberTyping(member.Position);
+                if (TargetMember.DisplayNameplate) DrawPartyMemberNameplateTyping(party, cid, TargetMember.NameplateStyle);
             }
         }
     }
@@ -152,7 +156,7 @@ public class PartyTypingUI : Window, IDisposable
             if (Plugin.Configuration.DisplaySelfMarker)
                 DrawPartyMemberTyping(0);
             if (Plugin.Configuration.DisplaySelfNamePlateMarker)
-                DrawPartyMemberNameplateTyping(party, Plugin.HashContentID(Plugin.ClientState.LocalContentId));
+                DrawPartyMemberNameplateTyping(party, Plugin.HashContentID(Plugin.ClientState.LocalContentId), Plugin.Configuration.NameplateMarkerStyle);
         }
 
         DrawPartyTypingStatus(party);

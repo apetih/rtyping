@@ -1,10 +1,9 @@
 using Dalamud.Game.Text.SeStringHandling;
-using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Client.Game.Group;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
-using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.UI.Info;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace rtyping
 {
@@ -51,7 +50,7 @@ namespace rtyping
             for (var i = 0; i < GetPartyMemberCount(); i++)
             {
                 var member = GetMemberByIndex(i);
-                if (!Plugin.Configuration.TrustedCharacters.Contains($"{member.Name}@{member.World}")) continue;
+                if (!Plugin.TrustedCharacterDb.TrustedCharacters.Any(m => m.CharacterName == member.Name.TextValue && m.WorldId == member.World && m.SendTypingStatus)) continue;
                 PartyDictionary.Add(Plugin.HashContentID(member.ContentID), member);
             }
             return PartyDictionary;

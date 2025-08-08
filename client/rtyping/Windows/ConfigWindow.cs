@@ -1,10 +1,7 @@
 using System;
-using System.Diagnostics;
 using System.Numerics;
-using Dalamud.Interface.Components;
-using Dalamud.Interface;
 using Dalamud.Interface.Windowing;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 namespace rtyping.Windows;
 
@@ -19,7 +16,7 @@ public class ConfigWindow : Window, IDisposable
     {
         this.SizeConstraints = new WindowSizeConstraints
         {
-            MinimumSize = new Vector2(262, 246),
+            MinimumSize = new Vector2(370, 246),
             MaximumSize = new Vector2(600, 600)
         };
         this.Size = new Vector2(262, 246);
@@ -33,57 +30,6 @@ public class ConfigWindow : Window, IDisposable
     private bool understood = false;
     public unsafe override void Draw()
     {
-        if (!this.Configuration.HideKofi)
-        {
-            if (ImGuiComponents.IconButton("KoFi", FontAwesomeIcon.Coffee, new Vector4(1.0f, 0.35f, 0.37f, 1.0f)))
-                Process.Start(new ProcessStartInfo { FileName = "https://ko-fi.com/apetih", UseShellExecute = true });
-            if (ImGui.IsItemHovered())
-                ImGui.SetTooltip("Support me on Ko-Fi");
-
-            ImGui.SameLine();
-        }
-
-        if (!Plugin.ClientState.IsLoggedIn || Plugin.Client.Status == Client.State.Mismatch || Plugin.Client.Status == Client.State.Reconnecting) ImGui.BeginDisabled();
-
-        if (ImGuiComponents.IconButton(FontAwesomeIcon.PowerOff, Plugin.Client.Status == Client.State.Connected ? new Vector4(1.0f, 0.13f, 0.13f, 1.0f) : new Vector4(0.13f, 0.8f, 0.13f, 1.0f)))
-        {
-            if (Plugin.Client.Status == Client.State.Connected)
-                Plugin.Client.Disconnect();
-            else
-                Plugin.Client.Connect();
-        }
-
-        if (!Plugin.ClientState.IsLoggedIn || Plugin.Client.Status == Client.State.Mismatch || Plugin.Client.Status == Client.State.Reconnecting) ImGui.EndDisabled();
-
-        ImGui.SameLine();
-
-        ImGui.Text("Server Status: ");
-        ImGui.SameLine();
-        switch (Plugin.Client.Status)
-        {
-            case Client.State.Disconnected:
-                ImGui.TextColored(new Vector4(0.4f, 0.4f, 0.4f, 1.0f), "Disconnected.");
-                break;
-
-            case Client.State.Error:
-                ImGui.TextColored(new Vector4(1.0f, 0.0f, 0.0f, 1.0f), "Error.");
-                break;
-
-            case Client.State.Reconnecting:
-                ImGui.TextColored(new Vector4(0.0f, 0.88f, 0.88f, 1.0f), "Reconnecting...");
-                break;
-
-            case Client.State.Mismatch:
-                ImGui.TextColored(new Vector4(1.0f, 0.0f, 0.0f, 1.0f), "Outdated Version.");
-                break;
-
-            case Client.State.Connected:
-                ImGui.TextColored(new Vector4(0.0f, 0.88f, 0.0f, 1.0f), "Connected.");
-                break;
-        }
-
-        ImGui.Spacing();
-
         var selfMarkerValue = this.Configuration.DisplaySelfMarker;
         var kofiDisabled = this.Configuration.HideKofi;
         var partyOpacity = this.Configuration.PartyMarkerOpacity;
@@ -94,6 +40,12 @@ public class ConfigWindow : Window, IDisposable
         var nameplateOpacity = this.Configuration.NameplateMarkerOpacity;
         var chatValue = this.Configuration.ServerChat;
         var trustAnyone = this.Configuration.TrustAnyone;
+        var defaultDisplayParty = this.Configuration.DefaultDisplayParty;
+        var defaultDisplayNameplate = this.Configuration.DefaultDisplayNameplate;
+        var defaultNameplateStyle = this.Configuration.DefaultNameplateStyle;
+        var defaultSendTypingStatus = this.Configuration.DefaultSendTypingStatus;
+        var defaultSendPartyless = this.Configuration.DefaultSendPartyless;
+        var defaultReceivePartyless = this.Configuration.DefaultReceivePartyless;
 
         if (ImGui.BeginTabBar("Config", ImGuiTabBarFlags.None))
         {
@@ -104,24 +56,6 @@ public class ConfigWindow : Window, IDisposable
                     this.Configuration.ServerChat = chatValue;
                     this.Configuration.Save();
                 }
-
-                if (ImGui.Checkbox("Hide Ko-Fi button", ref kofiDisabled))
-                {
-                    this.Configuration.HideKofi = kofiDisabled;
-                    this.Configuration.Save();
-                }
-
-                ImGui.EndTabItem();
-            }
-            if (ImGui.BeginTabItem("Trusted Settings"))
-            {
-                if (trustAnyone) ImGui.BeginDisabled();
-                if (ImGui.Button("Manage Trusted Characters"))
-                {
-                    this.Plugin.DrawTrustedListUI();
-                }
-                if (trustAnyone) ImGui.EndDisabled();
-
                 if (ImGui.Checkbox("Trust Anyone", ref trustAnyone))
                 {
                     if (!this.Configuration.TrustAnyone && trustAnyone)
@@ -160,52 +94,47 @@ public class ConfigWindow : Window, IDisposable
                     if (!understood) ImGui.EndDisabled();
                     ImGui.EndPopup();
                 }
+
+                if (ImGui.Checkbox("Hide Ko-Fi button", ref kofiDisabled))
+                {
+                    this.Configuration.HideKofi = kofiDisabled;
+                    this.Configuration.Save();
+                }
+
                 ImGui.EndTabItem();
             }
-            if (ImGui.BeginTabItem("Party"))
+            if (ImGui.BeginTabItem("Typing Indicators"))
             {
-                ImGui.SliderFloat("Opacity", ref partyOpacity, 0.5f, 1.0f, "%.1f");
+                ImGui.SliderFloat("Party Opacity", ref partyOpacity, 0.5f, 1.0f, "%.1f");
                 if (partyOpacity != this.Configuration.PartyMarkerOpacity)
                 {
 
                     this.Configuration.PartyMarkerOpacity = partyOpacity;
                     this.Configuration.Save();
                 }
-                if (ImGui.Checkbox("Display typing marker on self", ref selfMarkerValue))
-                {
-                    this.Configuration.DisplaySelfMarker = selfMarkerValue;
-                    this.Configuration.Save();
-                }
-                ImGui.EndTabItem();
-            }
-            if (ImGui.BeginTabItem("Nameplate"))
-            {
-                ImGui.SliderFloat("Opacity", ref nameplateOpacity, 0.2f, 1.0f, "%.1f");
+                ImGui.SliderFloat("Nameplate Opacity", ref nameplateOpacity, 0.2f, 1.0f, "%.1f");
                 if (nameplateOpacity != this.Configuration.NameplateMarkerOpacity)
                 {
 
                     this.Configuration.NameplateMarkerOpacity = nameplateOpacity;
                     this.Configuration.Save();
                 }
-
-                if (ImGui.Checkbox("Display nameplate marker on self", ref selfNamePlateValue))
+                if (ImGui.Checkbox("Display party typing indicator on self", ref selfMarkerValue))
+                {
+                    this.Configuration.DisplaySelfMarker = selfMarkerValue;
+                    this.Configuration.Save();
+                }
+                if (ImGui.Checkbox("Display nameplate typing indicator on self", ref selfNamePlateValue))
                 {
                     this.Configuration.DisplaySelfNamePlateMarker = selfNamePlateValue;
                     this.Configuration.Save();
                 }
-
-                if (ImGui.Checkbox("Display nameplate marker on others", ref othersNamePlateValue))
-                {
-                    this.Configuration.DisplayOthersNamePlateMarker = othersNamePlateValue;
-                    this.Configuration.Save();
-                }
-
-                if (ImGui.Checkbox("Hide marker if nameplate not visible", ref showHidden))
+                if (ImGui.Checkbox("Hide nameplate indicator if nameplate not visible", ref showHidden))
                 {
                     this.Configuration.ShowOnlyWhenNameplateVisible = showHidden;
                     this.Configuration.Save();
                 }
-                ImGui.Text("Nameplate Marker Position");
+                ImGui.Text("Self Nameplate Indicator Position");
                 ImGui.RadioButton("Side", ref altStyle, 0); ImGui.SameLine();
                 ImGui.RadioButton("Top", ref altStyle, 1);
                 if (altStyle != this.Configuration.NameplateMarkerStyle)
@@ -214,10 +143,48 @@ public class ConfigWindow : Window, IDisposable
                     this.Configuration.NameplateMarkerStyle = altStyle;
                     this.Configuration.Save();
                 }
-
                 ImGui.EndTabItem();
             }
+            if (ImGui.BeginTabItem("Trusted Defaults"))
+            {
+                if (ImGui.Checkbox("Display party typing indicator", ref defaultDisplayParty))
+                {
+                    this.Configuration.DefaultDisplayParty = defaultDisplayParty;
+                    this.Configuration.Save();
+                }
+                if (ImGui.Checkbox("Display nameplate typing indicator", ref defaultDisplayNameplate))
+                {
+                    this.Configuration.DefaultDisplayNameplate = defaultDisplayNameplate;
+                    this.Configuration.Save();
+                }
+                if (ImGui.Checkbox("Send typing status", ref defaultSendTypingStatus))
+                {
+                    this.Configuration.DefaultSendTypingStatus = defaultSendTypingStatus;
+                    this.Configuration.Save();
+                }
+                /* Someday.
+                if (ImGui.Checkbox("Send partyless typing status", ref defaultSendPartyless))
+                {
+                    this.Configuration.DefaultSendPartyless = defaultSendPartyless;
+                    this.Configuration.Save();
+                }
+                if (ImGui.Checkbox("Display partyless typing status", ref defaultReceivePartyless))
+                {
+                    this.Configuration.DefaultReceivePartyless = defaultReceivePartyless;
+                    this.Configuration.Save();
+                }
+                */
+                ImGui.Text("Nameplate Indicator Position");
+                ImGui.RadioButton("Side", ref defaultNameplateStyle, 0); ImGui.SameLine();
+                ImGui.RadioButton("Top", ref defaultNameplateStyle, 1);
+                if (defaultNameplateStyle != this.Configuration.DefaultNameplateStyle)
+                {
 
+                    this.Configuration.DefaultNameplateStyle = defaultNameplateStyle;
+                    this.Configuration.Save();
+                }
+                ImGui.EndTabItem();
+            }
             ImGui.EndTabBar();
         }
 

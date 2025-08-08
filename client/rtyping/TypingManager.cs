@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Dalamud.Memory;
 using Dalamud.Plugin.Services;
 using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -127,7 +126,7 @@ namespace rtyping
 
         private unsafe bool DetectCursor()
         {
-            var chatlog = (AtkUnitBase*)Plugin.GameGui.GetAddonByName("ChatLog", 1);
+            var chatlog = (AtkUnitBase*)Plugin.GameGui.GetAddonByName("ChatLog", 1).Address;
 
             if (chatlog == null) return false;
             if (!chatlog->IsVisible) return false;
@@ -141,7 +140,7 @@ namespace rtyping
 
         private unsafe string GetChatString()
         {
-            var chatlog = (AtkUnitBase*)Plugin.GameGui.GetAddonByName("ChatLog", 1);
+            var chatlog = (AtkUnitBase*)Plugin.GameGui.GetAddonByName("ChatLog", 1).Address;
 
             if (chatlog == null) return "";
             if (!chatlog->IsVisible) return "";

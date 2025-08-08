@@ -14,7 +14,7 @@ namespace rtyping
             Transport = SocketIOClient.Transport.TransportProtocol.WebSocket
         });
 
-        private readonly string wsVer = "api12";
+        private readonly string wsVer = "7.3";
 
         internal enum State
         {
@@ -73,7 +73,7 @@ namespace rtyping
             {
                 await wsClient.ConnectAsync();
             }
-            catch (Exception ex)
+            catch
             {
                 Plugin.Log.Error("Unable to connect to RTyping server.");
             }
