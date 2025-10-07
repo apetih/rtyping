@@ -69,6 +69,8 @@ namespace rtyping
 
             this.TrustedCharacterDb = new TrustedCharacterContext(PluginInterface.GetPluginConfigDirectory() + Path.DirectorySeparatorChar);
 
+            Log.Information($"Loaded {TrustedCharacterDb.TrustedCharacters.Count()} trusted characters.");
+            
             Worlds = DataManager.GetExcelSheet<World>().Where(w => w.IsPublic && w.DataCenter.RowId != 0 && !w.Name.IsEmpty).OrderBy(w => w.Name.ToString()).ToDictionary(w => w.Name.ExtractText(), w => w.RowId);
 
             PartyTypingUI = new PartyTypingUI(this);
