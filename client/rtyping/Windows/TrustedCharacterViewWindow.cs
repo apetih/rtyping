@@ -49,7 +49,7 @@ namespace rtyping.Windows
                 ImGui.Text("No character selected.");
                 return;
             }
-            var Homeworld = Plugin.DataManager.GetExcelSheet<World>().GetRow(TargetCharacter.WorldId).Name.ExtractText();
+            var Homeworld = TargetCharacter.GetWorldName(Plugin);
             ImGui.Text($"Name: {TargetCharacter.CharacterName}");
             ImGui.Text($"Homeworld: {Homeworld}");
             ImGui.Text($"Trusted Since: {TargetCharacter.AddedAt}");

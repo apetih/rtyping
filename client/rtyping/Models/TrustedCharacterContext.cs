@@ -1,3 +1,4 @@
+using Lumina.Excel.Sheets;
 using Microsoft.EntityFrameworkCore;
 using System;
 
@@ -34,5 +35,9 @@ namespace rtyping.Models
         public bool SendTypingStatus { get; set; }
         public bool SendPartyless {  get; set; }
         public bool ReceivePartyless {  get; set; }
+
+        public string GetWorldName(Plugin Plugin) { 
+            return Plugin.Worlds.Values.Contains(WorldId) ? Plugin.DataManager.GetExcelSheet<World>().GetRow(this.WorldId).Name.ExtractText() : "Unknown";
+        }
     }
 }

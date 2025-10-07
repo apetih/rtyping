@@ -109,7 +109,7 @@ namespace rtyping.Windows
                 {
                     var TargetCharacter = TrustedList[i];
                     var characterName = TargetCharacter.CharacterName;
-                    var worldName = Plugin.DataManager.GetExcelSheet<World>().GetRow(TargetCharacter.WorldId).Name.ExtractText();
+                    var worldName = TargetCharacter.GetWorldName(Plugin);
                     if (!characterName.Contains(filter, StringComparison.CurrentCultureIgnoreCase)) continue;
                     var displayName = $"{characterName}@{worldName}";
                     if (ImGui.Selectable($"{displayName}", selected == i))
