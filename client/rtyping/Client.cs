@@ -67,7 +67,7 @@ namespace rtyping
             wsClient.Options.Query = new List<KeyValuePair<string, string>>
                 {
                     new KeyValuePair<string, string>("version", wsVer),
-                    new KeyValuePair<string, string>("ContentID", Plugin.HashContentID(Plugin.ClientState.LocalContentId))
+                    new KeyValuePair<string, string>("ContentID", Plugin.HashContentID(Plugin.PlayerState.ContentId))
                 };
             try
             {

@@ -34,6 +34,7 @@ namespace rtyping
         [PluginService] public static IContextMenu ContextMenu { get; private set; } = null!;
         [PluginService] public static IPluginLog PluginLog { get; private set; } = null!;
         [PluginService] public static INotificationManager NotificationManager { get; private set; } = null!;
+        [PluginService] public static IPlayerState PlayerState { get; private set; } = null!;
 
         public Configuration Configuration { get; init; }
 

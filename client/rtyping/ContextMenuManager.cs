@@ -76,7 +76,7 @@ namespace rtyping
             var TargetPlayerName = ((MenuTargetDefault)args.Target).TargetName;
             var TargetPlayerWorldId = ((MenuTargetDefault)args.Target).TargetHomeWorld.RowId;
 
-            if (TargetPlayerName == Plugin.ClientState.LocalPlayer!.Name.TextValue && TargetPlayerWorldId == Plugin.ClientState.LocalPlayer!.HomeWorld.RowId) return;
+            if (TargetPlayerName == Plugin.PlayerState.CharacterName && TargetPlayerWorldId == Plugin.PlayerState.HomeWorld.RowId) return;
 
             if (Plugin.TrustedCharacterDb.TrustedCharacters.Any(c => c.CharacterName == TargetPlayerName && c.WorldId == TargetPlayerWorldId))
                 args.AddMenuItem(new()

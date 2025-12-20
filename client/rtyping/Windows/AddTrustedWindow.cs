@@ -38,7 +38,7 @@ public class AddTrustedWindow : Window, IDisposable
         this.sendTypingStatus = Plugin.Configuration.DefaultSendTypingStatus;
         this.sendPartyless = Plugin.Configuration.DefaultSendPartyless;
         this.receivePartyless = Plugin.Configuration.DefaultReceivePartyless;
-        this.selected = Plugin.ClientState.LocalPlayer == null ? 0 : Plugin.Worlds.Keys.ToList().FindIndex(w => w == Plugin.ClientState.LocalPlayer.HomeWorld.Value.Name);
+        this.selected = Plugin.PlayerState.IsLoaded ? 0 : Plugin.Worlds.Keys.ToList().FindIndex(w => w == Plugin.PlayerState.HomeWorld.Value.Name);
         this.characterName = "";
     }
 

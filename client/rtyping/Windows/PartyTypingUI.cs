@@ -73,7 +73,7 @@ public class PartyTypingUI : Window, IDisposable
         var ui3DModule = Framework.Instance()->GetUIModule()->GetUI3DModule();
         uint oid;
 
-        if (cid == Plugin.HashContentID(Plugin.ClientState.LocalContentId) && Plugin.ClientState.LocalPlayer != null) oid = Plugin.ClientState.LocalPlayer.EntityId;
+        if (cid == Plugin.HashContentID(Plugin.PlayerState.ContentId) && Plugin.PlayerState.IsLoaded) oid = Plugin.PlayerState.EntityId;
         else
         {
             if (!party.ContainsKey(cid)) return;
@@ -147,7 +147,7 @@ public class PartyTypingUI : Window, IDisposable
 
     public override void Draw()
     {
-        if (Plugin.ClientState.LocalPlayer == null) return;
+        if (!Plugin.PlayerState.IsLoaded) return;
 
         var party = Plugin.PartyManager.BuildPartyDictionary();
 
@@ -156,7 +156,7 @@ public class PartyTypingUI : Window, IDisposable
             if (Plugin.Configuration.DisplaySelfMarker)
                 DrawPartyMemberTyping(0);
             if (Plugin.Configuration.DisplaySelfNamePlateMarker)
-                DrawPartyMemberNameplateTyping(party, Plugin.HashContentID(Plugin.ClientState.LocalContentId), Plugin.Configuration.NameplateMarkerStyle);
+                DrawPartyMemberNameplateTyping(party, Plugin.HashContentID(Plugin.PlayerState.ContentId), Plugin.Configuration.NameplateMarkerStyle);
         }
 
         DrawPartyTypingStatus(party);
