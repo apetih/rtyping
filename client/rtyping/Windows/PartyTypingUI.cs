@@ -41,7 +41,7 @@ public class PartyTypingUI : Window, IDisposable
         if (memberIndex < 0 || memberIndex > 7) return;
 
         var partyList = (AtkUnitBase*)Plugin.GameGui.GetAddonByName("_PartyList", 1).Address;
-        var memberNodeIndex = 23 - memberIndex;
+        var memberNodeIndex = 24 - memberIndex;
 
         if (partyList == null) return;
         if (!partyList->IsVisible) return;
@@ -133,7 +133,8 @@ public class PartyTypingUI : Window, IDisposable
             if (!Plugin.TrustedCharacterDb.TrustedCharacters.Any(c => c.CharacterName == member.Name.TextValue && c.WorldId == member.World) && !trustAnyone) continue;
             if (Plugin.TypingManager.TypingList.ContainsKey(cid))
             {
-                if(!Plugin.TrustedCharacterDb.TrustedCharacters.Any(c => c.CharacterName == member.Name.TextValue && c.WorldId == member.World) && trustAnyone) {
+                if (!Plugin.TrustedCharacterDb.TrustedCharacters.Any(c => c.CharacterName == member.Name.TextValue && c.WorldId == member.World) && trustAnyone)
+                {
                     if (Plugin.Configuration.DefaultDisplayParty) DrawPartyMemberTyping(member.Position);
                     if (Plugin.Configuration.DefaultDisplayNameplate) DrawPartyMemberNameplateTyping(party, cid, Plugin.Configuration.DefaultNameplateStyle);
                     continue;
