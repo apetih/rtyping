@@ -101,7 +101,7 @@ namespace rtyping
             }
 
             if (Environment.TickCount64 < ResendDelay) return;
-            if (IPCTyping) return;
+            if (IPCTyping) { WasTyping = false; return; } // reset so next frame re-triggers start-typing broadcast
 
             var currentChat = GetChatString();
 

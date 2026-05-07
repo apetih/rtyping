@@ -44,6 +44,7 @@ namespace rtyping
         public ContextMenuManager ContextMenuManager { get; init; }
         public WindowSystem WindowSystem = new("rtyping");
         public IpcController IPCController;
+        internal ChatTwoIpc ChatTwoIpc { get; private set; } = null!;
 
         public PartyTypingUI PartyTypingUI;
         public ConfigWindow ConfigWindow;
@@ -67,6 +68,7 @@ namespace rtyping
             this.PartyManager = new PartyManager(this);
             this.ContextMenuManager = new ContextMenuManager(this);
             this.IPCController = new IpcController(this);
+            this.ChatTwoIpc = new ChatTwoIpc(this);
 
             this.TrustedCharacterDb = new TrustedCharacterContext(PluginInterface.GetPluginConfigDirectory() + Path.DirectorySeparatorChar);
 
@@ -119,6 +121,7 @@ namespace rtyping
         public void Dispose()
         {
             WindowSystem.RemoveAllWindows();
+            ChatTwoIpc.Dispose();
             IPCController.Dispose();
             this.Client.Dispose();
             this.ContextMenuManager.Dispose();
